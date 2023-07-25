@@ -7,7 +7,7 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class MotionHandler {
+public class MotionHandler implements  LightStatusListener{
 
     String brokerUrl = "tcp://127.0.0.1:1883"; // Cambiare l'URL del broker MQTT se necessario
     String clientId = "CoapToMqttClient"; // Un identificativo univoco per il client MQTT
@@ -15,13 +15,15 @@ public class MotionHandler {
     private MqttClient mqttClient;
     private Motion motion;
     private LightStatusHandler lightStatusHandler; // Nuovo campo per il riferimento al client MQTT di Light
-
+    private int lightsOnCount;
+    private int lightsOffCount;
 
     public MotionHandler(String brokerUrl, String clientId, String topic, Motion motion, LightStatusHandler lightStatusHandler) {
         this.brokerUrl = brokerUrl;
         this.clientId = clientId;
         this.topic = topic;
         this.motion = motion;
+        motion.setLightStatusistener(this);
         this.lightStatusHandler = lightStatusHandler; // Imposta il riferimento al client MQTT di Light
 
     }
@@ -55,12 +57,13 @@ public class MotionHandler {
                         genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
                         String lights = (String) genreJsonObject.get("lights");
                         int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
-                        int numAccensioni = 10; // Numero di accensioni delle luci
-                        int numSpegnimenti = 7; // Numero di spegnimenti delle luci
-                        double lightIntensity = 50; // Intensità media della luce
+                        int numFireup = motion.getLightsOnCount();// Numero di accensioni delle luci
+                        int numTurnOffs = motion.getLightsOffCount(); // Numero di spegnimenti delle luci
+                        double lightIntensity = 20;
+                        // Intensità media della luce
 
                         // Calcolo del wear level
-                        double wearLevel = calculateWearLevel(numAccensioni, numSpegnimenti, lightIntensity);
+                        double wearLevel = calculateWearLevel(numFireup, numTurnOffs, lightIntensity);
                         handleWearLevel(wearLevel);
 
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
@@ -116,4 +119,11 @@ public class MotionHandler {
     }
 
 
+    @Override
+    public void onLightsStatusUpdated(int lightsOnCount, int lightsOffCount) {
+        this.lightsOnCount = lightsOnCount;
+        this.lightsOffCount = lightsOffCount;
+        System.out.println("Lights On Count: " + lightsOnCount);
+        System.out.println("Lights Off Count: " + lightsOffCount);
+    }
 }

@@ -34,6 +34,7 @@ public class Motion {
     public MqttClient lightMqttClient; // Nuovo campo per il riferimento al client MQTT di Light
     private Handler Logging;
     private String lightsDegreeDescription;
+    private LightStatusListener lightStatusListener;
 
 
     public Motion(String sourceAddress, String resource, MqttClient lightMqttClient) throws ConnectorException, IOException {
@@ -49,6 +50,9 @@ public class Motion {
         System.out.println("Motion resource initialized");
     }
 
+    public void setLightStatusistener(LightStatusListener listener){
+        this.lightStatusListener = listener;
+    }
     public void handleMqttMessage(byte[] payload) throws ConnectorException, IOException {
         System.out.println("Callback called, resource arrived");
         if (payload != null && payload.length > 0) {
@@ -78,8 +82,12 @@ public class Motion {
                 lightsOffCount++;
             }
             this.executeQuery(wearLevel);
+            // Chiamare il metodo di callback per passare i valori aggiornati alla classe MotionHandler
+            if (lightStatusListener != null) {
+                lightStatusListener.onLightsStatusUpdated(lightsOnCount, lightsOffCount);
+            }
             // Invia il valore di "wearLevel" al broker MQTT di Light come messaggio
-            String lightTopic = "light/sensor/data"; // Sostituisci con il topic appropriato per Light
+            String lightTopic = "light/sensor/data";
             String wearLevelMessage = "{ \"wearLevel\": " + wearLevel + " }";
             MqttMessage mqttMessage = new MqttMessage(wearLevelMessage.getBytes());
             try {

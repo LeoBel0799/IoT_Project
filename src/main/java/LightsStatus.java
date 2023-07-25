@@ -41,20 +41,6 @@ public class LightsStatus {
     }
 
 
-    private Map<String, String> parseJson(String json) {
-        Map<String, String> data = new HashMap<>();
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) parser.parse(json);
-            String lights = (String) jsonObject.get("lights");
-            String lightsDegree = (String) jsonObject.get("lightsDegree");
-            data.put("lights", lights);
-            data.put("lightsDegree", lightsDegree);
-        } catch (org.json.simple.parser.ParseException e) {
-            e.printStackTrace();
-        }
-        return data;
-    }
 
     public void handleMqttMessage(byte[] payload) throws ConnectorException, IOException {
         System.out.println("Callback called, resource arrived");
@@ -71,7 +57,6 @@ public class LightsStatus {
             this.lightFulminated = lightFulminated.split(" ")[0];
             this.wearLevel = Integer.parseInt(wearLevel.split(" ")[0]);
 
-            // Esempio: Aggiornare il grado di usura delle luci in base ai dati ricevuti
             String wearLevelStr = (String) jsonPayload.get("wearLevel");
             double receivedWearLevel = Double.parseDouble(wearLevelStr);
             this.wearLevel = Math.max(this.wearLevel, receivedWearLevel); // Aggiorna il grado di usura al massimo valore tra quello attuale e quello ricevuto
