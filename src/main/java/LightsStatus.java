@@ -31,6 +31,10 @@ public class LightsStatus {
     private Handler Logging;
 
     public LightsStatus(String sourceAddress, String resource, double wearLevel) throws ConnectorException, IOException {
+        // Inizializza i campi del motore delle risorse
+        this.db = new DB();
+        this.connection = this.db.connectDbs();
+        System.out.println("Connected to Collector DB");
         // Initialize LightStatus resource fields
         this.address = sourceAddress;
         this.resource = resource;

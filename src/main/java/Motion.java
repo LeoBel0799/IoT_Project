@@ -121,7 +121,7 @@ public class Motion {
     public void executeQuery(String wearLevel) {
         try {
             System.out.println(this.connection);
-            String sql = "INSERT INTO `coapmotion` (`lights`,`lightsDegree`,`brights`,,`lightsOnCount`,`lightsOffCount`,`timestamp`,`wearLevel`) VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO `coapmotion` (`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`,`wearLevel`) VALUES (?, ?, ?, ?, ?, ?,?)";
             PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
             preparedStatement.setInt(1, this.lights.equals("T") ? 1 : 0);
             preparedStatement.setInt(2, this.lightsDegree);
