@@ -1,6 +1,6 @@
-package collectors;
+package it.iot.application.collectors;
 
-import DB.DB;
+import it.iot.application.DB.DB;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
@@ -34,7 +34,7 @@ public class LightsStatus {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
-        System.out.println("Connected to Collector DB.DB");
+        System.out.println("Connected to Collector it.iot.DB.DB");
         // Initialize LightStatus resource fields
         this.address = sourceAddress;
         this.resource = resource;

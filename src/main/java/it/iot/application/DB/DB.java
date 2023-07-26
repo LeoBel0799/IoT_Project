@@ -1,4 +1,4 @@
-package DB;
+package it.iot.application.DB;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

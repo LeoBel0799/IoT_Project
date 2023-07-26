@@ -1,6 +1,7 @@
-package collectors;
+package it.iot.application.collectors;
 
-import DB.DB;
+import it.iot.application.DB.DB;
+import it.iot.application.utils.LightStatusListener;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
@@ -13,7 +14,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
-import utils.LightStatusListener;
 
 import java.io.IOException;
 import java.sql.*;
@@ -45,13 +45,13 @@ public class Motion {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
-        System.out.println("Connected to Collector DB.DB");
+        System.out.println("Connected to Collector it.iot.DB.DB");
         this.address = sourceAddress;
         this.resource = resource;
         this.lightMqttClient = lightMqttClient; // Imposta il riferimento al client MQTT di Light
         // Avvia l'osservazione per gli aggiornamenti
         this.startObserving();
-        System.out.println("collectors.Motion resource initialized");
+        System.out.println("it.iot.collectors.Motion resource initialized");
     }
 
     public void setLightStatusistener(LightStatusListener listener){
@@ -86,7 +86,7 @@ public class Motion {
                 lightsOffCount++;
             }
             this.executeQuery(wearLevel);
-            // Chiamare il metodo di callback per passare i valori aggiornati alla classe handlers.MotionHandler
+            // Chiamare il metodo di callback per passare i valori aggiornati alla classe it.iot.handlers.MotionHandler
             if (lightStatusListener != null) {
                 lightStatusListener.onLightsStatusUpdated(lightsOnCount, lightsOffCount);
             }
