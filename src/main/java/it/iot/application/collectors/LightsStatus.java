@@ -26,7 +26,8 @@ public class LightsStatus {
     private static final double MAX_WEAR_LEVEL = 5.0;
     private String address;
     private String resource;
-    private String lightFulminated = "F"; // Stato delle luci, true se sono fulminate, false altrimenti
+    private String lightId;
+    private String lightFulminated; // Stato delle luci, true se sono fulminate, false altrimenti
     private double wearLevel;
     private Handler Logging;
 
@@ -34,7 +35,7 @@ public class LightsStatus {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
-        System.out.println("Connected to Collector it.iot.DB.DB");
+        System.out.println("Connected to Collector DB");
         // Initialize LightStatus resource fields
         this.address = sourceAddress;
         this.resource = resource;
@@ -51,15 +52,17 @@ public class LightsStatus {
         if (payload != null && payload.length > 0) {
             String payloadStr = new String(payload);
             JSONObject jsonPayload = (JSONObject) JSONValue.parse(payloadStr);
-
-            String lightsFulminated = (String)jsonPayload.get("lightFulminated");
+            String id = (String)jsonPayload.get("id");
+            String lightFulminated = (String)jsonPayload.get("lightFulminated");
             String wearLevel = (String)jsonPayload.get("wearLevel");
             System.out.println("Detection value node:");
-            System.out.println("lightFulminated: " + lightsFulminated);
+            System.out.println("id: " + id);
+            System.out.println("lightFulminated: " + lightFulminated);
             System.out.println("wearLevel: " + wearLevel);
 
-            this.lightFulminated = lightFulminated.split(" ")[0];
-            this.wearLevel = Integer.parseInt(wearLevel.split(" ")[0]);
+            this.lightId = id;
+            this.lightFulminated = lightFulminated;
+            this.wearLevel = Double.parseDouble(wearLevel);
 
             String wearLevelStr = (String) jsonPayload.get("wearLevel");
             double receivedWearLevel = Double.parseDouble(wearLevelStr);
@@ -84,10 +87,11 @@ public class LightsStatus {
         try {
             System.out.println(this.connection);
             // Prima query per inserire i dati in coapalarm
-            String sql1 = "INSERT INTO `coaplightstatus`(`lightFulimnated`, `wearLevel`) VALUES (?, ?)";
+            String sql1 = "INSERT INTO `coaplightstatus`(`id`,`lightFulimnated`, `wearLevel`) VALUES (?,?, ?)";
             PreparedStatement preparedStatement1 = this.connection.prepareStatement(sql1);
-            preparedStatement1.setInt(1, Integer.parseInt(lightFulminated));
-            preparedStatement1.setInt(2, (int) wearLevel);
+            preparedStatement1.setInt(1, Integer.parseInt(this.lightId));
+            preparedStatement1.setInt(2, Integer.parseInt(lightFulminated));
+            preparedStatement1.setInt(3, (int) wearLevel);
             preparedStatement1.executeUpdate();
 
             // Imposta il campo 'alarm' in base al grado di usura
@@ -95,11 +99,12 @@ public class LightsStatus {
 
             // Seconda query per inserire i dati in coaplightstatus solo se il grado di usura è massimo
             if (wearLevel >= MAX_WEAR_LEVEL) {
-                String sql2 = "INSERT INTO `coapalarm` (`wearLevel`, `ALARM`, `timestamp`) VALUES (?, ?, ?)";
+                String sql2 = "INSERT INTO `coapalarm` (`id`,`wearLevel`, `ALARM`, `timestamp`) VALUES (?, ?, ?,?)";
                 PreparedStatement preparedStatement2 = this.connection.prepareStatement(sql2);
-                preparedStatement2.setInt(1, (int) wearLevel);
-                preparedStatement2.setBoolean(2, alarm); // true indica che l'allarme è scattato, false altrimenti
-                preparedStatement2.setString(3, getFormattedTimestamp());
+                preparedStatement2.setInt(1, Integer.parseInt(this.lightId));
+                preparedStatement2.setInt(2, (int) wearLevel);
+                preparedStatement2.setBoolean(3, alarm); // true indica che l'allarme è scattato, false altrimenti
+                preparedStatement2.setString(4, getFormattedTimestamp());
                 preparedStatement2.executeUpdate();
             }
         } catch (SQLException e) {

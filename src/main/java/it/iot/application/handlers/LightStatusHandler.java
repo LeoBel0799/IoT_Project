@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.json.simple.JSONValue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LightStatusHandler {
 
@@ -56,10 +57,12 @@ public class LightStatusHandler {
                     JSONObject genreJsonObject;
                     try {
                         genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
+                        String id = (String) genreJsonObject.get("id");
                         String lightFulminated = (String) genreJsonObject.get("lightFulminated");
-                        byte[] payload = lightFulminated.getBytes(); // Converti la stringa in un array di byte
-                        System.out.println("[!] Insert Alert data in it.iot.DB.DB");
-                        lightsStatus.handleMqttMessage(payload);
+                        Integer wearLevel = (Integer) genreJsonObject.get("wearLevel");
+                        // Crea il payload CoAP utilizzando il metodo createCoapPayload
+                        byte[] coapPayload = createCoapPayload(id, lightFulminated, wearLevel);                        System.out.println("[!] Insert Alert data in DB");
+                        lightsStatus.handleMqttMessage(coapPayload);
 
                     }catch (org.json.simple.parser.ParseException e){
                         e.printStackTrace();
@@ -85,17 +88,27 @@ public class LightStatusHandler {
     public void publishWearLevel(double wearLevel) {
         // Crea il payload JSON per il messaggio MQTT contenente il valore di wearLevel
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("wearLevel", wearLevel);
+        jsonObject.put("wearLevel", String.valueOf(wearLevel));
 
         // Converti l'oggetto JSON in una stringa e pubblica il messaggio MQTT
         String payload = jsonObject.toString();
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
         try {
             mqttClient.publish(lightTopic, mqttMessage);
-            System.out.println("Sent wearLevel to it.iot.handlers.LightStatusHandler MQTT Broker: " + payload);
+            System.out.println("Sent wearLevel to LightStatusHandler MQTT Broker: " + payload);
         } catch (MqttException e) {
             e.printStackTrace();
         }
+    }
+
+    private byte[] createCoapPayload(String id, String lightsDegree, int wearLevel) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", id);
+        jsonObject.put("lightFulminated", lightsDegree);
+        jsonObject.put("wearLevel", wearLevel);
+
+        String payloadStr = jsonObject.toString();
+        return payloadStr.getBytes(StandardCharsets.UTF_8);
     }
 
 

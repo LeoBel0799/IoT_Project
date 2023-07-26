@@ -52,13 +52,14 @@ public class MotionHandler implements LightStatusListener {
 
                 @Override
                 public void messageArrived(String topic, MqttMessage mqttMessage) {
-                    System.out.println("[!] Receiving it.iot.collectors.Motion message");
+                    System.out.println("[!] Receiving Motion message");
                     String msg = new String(mqttMessage.getPayload());
                     System.out.println(" ---  " + msg);
 
                     JSONObject genreJsonObject;
                     try {
                         genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
+                        Integer id = (Integer) genreJsonObject.get("id");
                         String lights = (String) genreJsonObject.get("lights");
                         int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
                         int numFireup = motion.getLightsOnCount();// Numero di accensioni delle luci
@@ -71,7 +72,7 @@ public class MotionHandler implements LightStatusListener {
                         handleWearLevel(wearLevel);
 
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(lights, lightsDegree, (int) wearLevel);
+                        byte[] coapPayload = createCoapPayload(id,lights, lightsDegree, (int) wearLevel);
 
                         // Chiamare il metodo handleMqttMessage della classe it.iot.collectors.Motion
                         motion.handleMqttMessage(coapPayload);
@@ -102,9 +103,9 @@ public class MotionHandler implements LightStatusListener {
         return (numSpegnimenti / (double) (numAccensioni + numSpegnimenti)) * lightIntensity;
     }
 
-    private byte[] createCoapPayload(String lights, int lightsDegree, int wearLevel) {
-        // Combinare i dati "lights", "lightsDegree", "lightsOnCount" e "lightsOffCount" nel formato desiderato per il payload CoAP
+    private byte[] createCoapPayload(Integer id, String lights, int lightsDegree, int wearLevel) {
         JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id",id);
         jsonObject.put("lights", lights);
         jsonObject.put("lightsDegree", lightsDegree);
         jsonObject.put("wearLevel", wearLevel);

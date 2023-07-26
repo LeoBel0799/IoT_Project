@@ -29,11 +29,12 @@ public class Motion {
     private Connection connection;
     private String address;
     private String resource;
-    private String lights = "F"; //luci accese o spente
-    private int lightsDegree = 2; //1 posizione - 2 anabbaglianti
-    private String brights = "F"; //abbaglianti accesi o spenti
-    private int lightsOnCount = 0; // Contatore per il numero di volte in cui le luci sono state accese
-    private int lightsOffCount = 0; // Contatore per il numero di volte in cui le luci sono state spente
+    private String lightId;
+    private String lights; //luci accese o spente
+    private int lightsDegree; //1 posizione - 2 anabbaglianti
+    private String brights; //abbaglianti accesi o spenti
+    private int lightsOnCount; // Contatore per il numero di volte in cui le luci sono state accese
+    private int lightsOffCount; // Contatore per il numero di volte in cui le luci sono state spente
     private int wearLevel;
     public MqttClient lightMqttClient; // Nuovo campo per il riferimento al client MQTT di Light
     private Handler Logging;
@@ -45,18 +46,20 @@ public class Motion {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
-        System.out.println("Connected to Collector it.iot.DB.DB");
+        System.out.println("Connected to Collector DB");
         this.address = sourceAddress;
         this.resource = resource;
         this.lightMqttClient = lightMqttClient; // Imposta il riferimento al client MQTT di Light
         // Avvia l'osservazione per gli aggiornamenti
         this.startObserving();
-        System.out.println("it.iot.collectors.Motion resource initialized");
+        System.out.println("Motion resource initialized");
     }
 
     public void setLightStatusistener(LightStatusListener listener){
         this.lightStatusListener = listener;
     }
+
+
     public void handleMqttMessage(byte[] payload) throws ConnectorException, IOException {
         System.out.println("Callback called, resource arrived");
         if (payload != null && payload.length > 0) {
@@ -64,14 +67,17 @@ public class Motion {
             System.out.println(payloadStr);
 
             Map<String, String> nodeData = parseJson(payloadStr);
+            String id = nodeData.get("id");
             String lights = nodeData.get("lights");
             String lightsDegree = nodeData.get("lightsDegree");
             String wearLevel = nodeData.get("wearLevel");
             System.out.println("Detection value node:");
+            System.out.println("id: " + id);
             System.out.println("lights: " + lights);
             System.out.println("lightsDegree: " + lightsDegree);
             System.out.println("wearLevel: " + wearLevel);
 
+            this.lightId = id.split(" ")[0];
             this.lights = lights.split(" ")[0];
             this.lightsDegree = Integer.parseInt(lightsDegree.split(" ")[0]);
             this.brights = String.valueOf(Integer.parseInt(brights.split(" ")[0]));
@@ -111,8 +117,10 @@ public class Motion {
         try {
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(json);
+            String id = (String) jsonObject.get("id");
             String lights = (String) jsonObject.get("lights");
             String lightsDegree = (String) jsonObject.get("lightsDegree");
+            data.put("id", id);
             data.put("lights", lights);
             data.put("lightsDegree", lightsDegree);
         } catch (org.json.simple.parser.ParseException e) {
@@ -125,15 +133,16 @@ public class Motion {
     public void executeQuery(String wearLevel) {
         try {
             System.out.println(this.connection);
-            String sql = "INSERT INTO `coapmotion` (`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`,`wearLevel`) VALUES (?, ?, ?, ?, ?, ?,?)";
+            String sql = "INSERT INTO `coapmotion` (`id`,`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`,`wearLevel`) VALUES (?,?, ?, ?, ?, ?, ?,?)";
             PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-            preparedStatement.setInt(1, this.lights.equals("T") ? 1 : 0);
-            preparedStatement.setInt(2, this.lightsDegree);
-            preparedStatement.setString(3, this.brights);
-            preparedStatement.setInt(4, this.lightsOnCount);
-            preparedStatement.setInt(5, this.lightsOffCount);
-            preparedStatement.setString(6, getFormattedTimestamp());
-            preparedStatement.setString(7, wearLevel);
+            preparedStatement.setInt(1, Integer.parseInt(this.lightId));
+            preparedStatement.setInt(2, this.lights.equals("T") ? 1 : 0);
+            preparedStatement.setInt(3, this.lightsDegree);
+            preparedStatement.setString(4, this.brights);
+            preparedStatement.setInt(5, this.lightsOnCount);
+            preparedStatement.setInt(6, this.lightsOffCount);
+            preparedStatement.setString(7, getFormattedTimestamp());
+            preparedStatement.setString(8, String.valueOf(wearLevel));
             preparedStatement.executeUpdate();
 
             // Show data log
