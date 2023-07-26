@@ -1,3 +1,6 @@
+package handlers;
+
+import collectors.LightsStatus;
 import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.*;
 import org.json.JSONObject;
@@ -55,7 +58,7 @@ public class LightStatusHandler {
                         genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
                         String lightFulminated = (String) genreJsonObject.get("lightFulminated");
                         byte[] payload = lightFulminated.getBytes(); // Converti la stringa in un array di byte
-                        System.out.println("[!] Insert Alert data in DB");
+                        System.out.println("[!] Insert Alert data in DB.DB");
                         lightsStatus.handleMqttMessage(payload);
 
                     }catch (org.json.simple.parser.ParseException e){
@@ -89,7 +92,7 @@ public class LightStatusHandler {
         MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
         try {
             mqttClient.publish(lightTopic, mqttMessage);
-            System.out.println("Sent wearLevel to LightStatusHandler MQTT Broker: " + payload);
+            System.out.println("Sent wearLevel to handlers.LightStatusHandler MQTT Broker: " + payload);
         } catch (MqttException e) {
             e.printStackTrace();
         }

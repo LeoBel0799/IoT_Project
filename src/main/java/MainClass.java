@@ -1,15 +1,14 @@
-import org.eclipse.californium.elements.exception.ConnectorException;
+import collectors.LightsStatus;
+import collectors.Motion;
+import handlers.LightStatusHandler;
+import handlers.MotionHandler;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-
-import java.io.IOException;
 
 
 /*
 class MainClass {
     public static void main(String[] args) throws ConnectorException, IOException {
-        // Configura i parametri del broker MQTT di Motion
+        // Configura i parametri del broker MQTT di collectors.Motion
         String motionBrokerUrl = "tcp://127.0.0.1:1883";
         String motionClientId = "CoapToMqttClient";
         String motionTopic = "coap/sensor/data";
@@ -20,23 +19,23 @@ class MainClass {
         String lightTopic = "light/sensor/data";
 
         try {
-            // Crea un'istanza del client MQTT di Motion e connettiti al broker MQTT di Motion
+            // Crea un'istanza del client MQTT di collectors.Motion e connettiti al broker MQTT di collectors.Motion
             MqttClient motionMqttClient = new MqttClient(motionBrokerUrl, motionClientId);
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(true);
             motionMqttClient.connect(options);
-            System.out.println("Connected to Motion MQTT Broker.");
+            System.out.println("Connected to collectors.Motion MQTT Broker.");
 
             // Crea un'istanza del client MQTT di Light e connettiti al broker MQTT di Light
             MqttClient lightMqttClient = new MqttClient(lightBrokerUrl, lightClientId);
             lightMqttClient.connect(options);
             System.out.println("Connected to Light MQTT Broker.");
 
-            // Crea un'istanza di MotionHandler e connettiti al broker MQTT di Motion
-            MotionHandler motionHandler = new MotionHandler(motionBrokerUrl, motionClientId, motionTopic, new Motion(motionBrokerUrl,motionTopic,lightMqttClient), lightMqttClient);
+            // Crea un'istanza di handlers.MotionHandler e connettiti al broker MQTT di collectors.Motion
+            handlers.MotionHandler motionHandler = new handlers.MotionHandler(motionBrokerUrl, motionClientId, motionTopic, new collectors.Motion(motionBrokerUrl,motionTopic,lightMqttClient), lightMqttClient);
             motionHandler.connect();
 
-            // Ora MotionHandler è in ascolto dei messaggi MQTT e invierà il wearLevel al broker MQTT di Light
+            // Ora handlers.MotionHandler è in ascolto dei messaggi MQTT e invierà il wearLevel al broker MQTT di Light
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -47,7 +46,7 @@ class MainClass {
 
 public class MainClass {
     public static void main(String[] args) {
-        // Configuro i parametri del broker MQTT di Motion
+        // Configuro i parametri del broker MQTT di collectors.Motion
         String motionBrokerUrl = "tcp://127.0.0.1:1883";
         String motionClientId = "CoapToMqttClient";
         String motionTopic = "coap/sensor/data";
@@ -58,16 +57,16 @@ public class MainClass {
         String lightTopic = "light/sensor/data";
 
         try {
-            // Create an instance of the Motion class
+            // Create an instance of the collectors.Motion class
             Motion motion = new Motion("sourceAddress", "resource", new MqttClient("mqttBrokerUrl", "motionClient"));
 
-            // Create an instance of the LightStatusHandler class
+            // Create an instance of the handlers.LightStatusHandler class
             LightStatusHandler lightStatusHandler = new LightStatusHandler("lightBrokerUrl", "lightStatusClient", "coap/sensor/data", new LightsStatus("lightSourceAddress", "lightResource", 0.0), null);
 
-            // Create an instance of the MotionHandler class
+            // Create an instance of the handlers.MotionHandler class
             MotionHandler motionHandler = new MotionHandler("motionBrokerUrl", "motionClient", "coap/sensor/data", motion, lightStatusHandler);
 
-            // Connect the MotionHandler and LightStatusHandler to their respective MQTT brokers
+            // Connect the handlers.MotionHandler and handlers.LightStatusHandler to their respective MQTT brokers
             motionHandler.connect();
             lightStatusHandler.connect();
 

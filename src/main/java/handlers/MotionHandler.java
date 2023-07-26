@@ -1,13 +1,18 @@
+package handlers;
+
+import collectors.Motion;
+import handlers.LightStatusHandler;
 import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.*;
 import org.json.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+import utils.LightStatusListener;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class MotionHandler implements  LightStatusListener{
+public class MotionHandler implements LightStatusListener {
 
     String brokerUrl = "tcp://127.0.0.1:1883"; // Cambiare l'URL del broker MQTT se necessario
     String clientId = "CoapToMqttClient"; // Un identificativo univoco per il client MQTT
@@ -48,7 +53,7 @@ public class MotionHandler implements  LightStatusListener{
 
                 @Override
                 public void messageArrived(String topic, MqttMessage mqttMessage) {
-                    System.out.println("[!] Receiving Motion message");
+                    System.out.println("[!] Receiving collectors.Motion message");
                     String msg = new String(mqttMessage.getPayload());
                     System.out.println(" ---  " + msg);
 
@@ -69,7 +74,7 @@ public class MotionHandler implements  LightStatusListener{
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
                         byte[] coapPayload = createCoapPayload(lights, lightsDegree, (int) wearLevel);
 
-                        // Chiamare il metodo handleMqttMessage della classe Motion
+                        // Chiamare il metodo handleMqttMessage della classe collectors.Motion
                         motion.handleMqttMessage(coapPayload);
                         lightStatusHandler.setWearLevel(wearLevel);
                     } catch (ParseException | ConnectorException | IOException e) {
@@ -88,7 +93,7 @@ public class MotionHandler implements  LightStatusListener{
     }
 
     public void handleWearLevel(double wearLevel) {
-        // Chiamare il metodo publishWearLevel della classe LightStatusHandler per inviare il valore di wearLevel all'MQTT di LightStatusHandler
+        // Chiamare il metodo publishWearLevel della classe handlers.LightStatusHandler per inviare il valore di wearLevel all'MQTT di handlers.LightStatusHandler
         lightStatusHandler.publishWearLevel(wearLevel);
     }
 

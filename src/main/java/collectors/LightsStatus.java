@@ -1,3 +1,6 @@
+package collectors;
+
+import DB.DB;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
@@ -7,7 +10,6 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.elements.exception.ConnectorException;
 import org.json.JSONObject;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -15,8 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
@@ -34,7 +34,7 @@ public class LightsStatus {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
-        System.out.println("Connected to Collector DB");
+        System.out.println("Connected to Collector DB.DB");
         // Initialize LightStatus resource fields
         this.address = sourceAddress;
         this.resource = resource;
