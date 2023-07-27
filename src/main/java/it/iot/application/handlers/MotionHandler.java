@@ -22,13 +22,12 @@ public class MotionHandler implements LightStatusListener {
     private int lightsOnCount;
     private int lightsOffCount;
 
-    public MotionHandler(String brokerUrl, String clientId, String topic, Motion motion, LightStatusHandler lightStatusHandler) {
+    public MotionHandler(String brokerUrl, String clientId, String topic) {
         this.brokerUrl = brokerUrl;
         this.clientId = clientId;
         this.topic = topic;
         this.motion = motion;
         motion.setLightStatusistener(this);
-        this.lightStatusHandler = lightStatusHandler; // Imposta il riferimento al client MQTT di Light
 
     }
 

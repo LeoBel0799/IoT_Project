@@ -42,14 +42,13 @@ public class Motion {
     private LightStatusListener lightStatusListener;
 
 
-    public Motion(String sourceAddress, String resource, MqttClient lightMqttClient) throws ConnectorException, IOException {
+    public Motion(String sourceAddress, String resource) throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
         System.out.println("Connected to Collector DB");
         this.address = sourceAddress;
         this.resource = resource;
-        this.lightMqttClient = lightMqttClient; // Imposta il riferimento al client MQTT di Light
         // Avvia l'osservazione per gli aggiornamenti
         this.startObserving();
         System.out.println("Motion resource initialized");

@@ -31,7 +31,7 @@ public class LightsStatus {
     private double wearLevel;
     private Handler Logging;
 
-    public LightsStatus(String sourceAddress, String resource, double wearLevel) throws ConnectorException, IOException {
+    public LightsStatus(String sourceAddress, String resource) throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connectDbs();
@@ -39,7 +39,6 @@ public class LightsStatus {
         // Initialize LightStatus resource fields
         this.address = sourceAddress;
         this.resource = resource;
-        this.wearLevel = wearLevel;
         // Start observing for updates
         this.startObserving();
         System.out.println("LightStatus resource initialized");

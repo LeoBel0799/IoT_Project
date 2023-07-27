@@ -58,13 +58,13 @@ public class MainClass {
 
         try {
             // Create an instance of the it.iot.collectors.Motion class
-            Motion motion = new Motion("sourceAddress", "resource", new MqttClient("mqttBrokerUrl", "motionClient"));
+            Motion motion = new Motion(motionBrokerUrl, motionTopic);
 
             // Create an instance of the it.iot.handlers.LightStatusHandler class
-            LightStatusHandler lightStatusHandler = new LightStatusHandler("lightBrokerUrl", "lightStatusClient", "coap/sensor/data", new LightsStatus("lightSourceAddress", "lightResource", 0.0), null);
+            LightStatusHandler lightStatusHandler = new LightStatusHandler(lightBrokerUrl, lightClientId, lightTopic, new LightsStatus(lightBrokerUrl,lightTopic));
 
             // Create an instance of the it.iot.handlers.MotionHandler class
-            MotionHandler motionHandler = new MotionHandler("motionBrokerUrl", "motionClient", "coap/sensor/data", motion, lightStatusHandler);
+            MotionHandler motionHandler = new MotionHandler(motionBrokerUrl, motionClientId, motionTopic);
 
             // Connect the it.iot.handlers.MotionHandler and it.iot.handlers.LightStatusHandler to their respective MQTT brokers
             motionHandler.connect();
