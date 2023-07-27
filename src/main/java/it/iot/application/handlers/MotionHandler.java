@@ -17,16 +17,16 @@ public class MotionHandler implements LightStatusListener {
     String clientId = "CoapToMqttClient"; // Un identificativo univoco per il client MQTT
     String topic = "coap/sensor/data"; // Il topic MQTT a cui inviare il payload
     private MqttClient mqttClient;
-    private Motion motion;
     private LightStatusHandler lightStatusHandler; // Nuovo campo per il riferimento al client MQTT di Light
     private int lightsOnCount;
     private int lightsOffCount;
+    Motion motion;
+
 
     public MotionHandler(String brokerUrl, String clientId, String topic) {
         this.brokerUrl = brokerUrl;
         this.clientId = clientId;
         this.topic = topic;
-        this.motion = motion;
         motion.setLightStatusistener(this);
 
     }
@@ -61,6 +61,7 @@ public class MotionHandler implements LightStatusListener {
                         Integer id = (Integer) genreJsonObject.get("id");
                         String lights = (String) genreJsonObject.get("lights");
                         int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
+                        int brights = Integer.parseInt((String) genreJsonObject.get("brights"));
                         int numFireup = motion.getLightsOnCount();// Numero di accensioni delle luci
                         int numTurnOffs = motion.getLightsOffCount(); // Numero di spegnimenti delle luci
                         double lightIntensity = 20;
@@ -71,7 +72,7 @@ public class MotionHandler implements LightStatusListener {
                         handleWearLevel(wearLevel);
 
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(id,lights, lightsDegree, (int) wearLevel);
+                        byte[] coapPayload = createCoapPayload(id,lights, lightsDegree,brights, (int) wearLevel);
 
                         // Chiamare il metodo handleMqttMessage della classe it.iot.collectors.Motion
                         motion.handleMqttMessage(coapPayload);
@@ -102,11 +103,12 @@ public class MotionHandler implements LightStatusListener {
         return (numSpegnimenti / (double) (numAccensioni + numSpegnimenti)) * lightIntensity;
     }
 
-    private byte[] createCoapPayload(Integer id, String lights, int lightsDegree, int wearLevel) {
+    private byte[] createCoapPayload(Integer id, String lights, int lightsDegree, int brights, int wearLevel) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id",id);
         jsonObject.put("lights", lights);
         jsonObject.put("lightsDegree", lightsDegree);
+        jsonObject.put("brights", lightsDegree);
         jsonObject.put("wearLevel", wearLevel);
 
         String payloadStr = jsonObject.toString();

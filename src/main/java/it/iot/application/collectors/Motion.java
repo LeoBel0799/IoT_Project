@@ -69,6 +69,7 @@ public class Motion {
             String id = nodeData.get("id");
             String lights = nodeData.get("lights");
             String lightsDegree = nodeData.get("lightsDegree");
+            String brights = nodeData.get("brights");
             String wearLevel = nodeData.get("wearLevel");
             System.out.println("Detection value node:");
             System.out.println("id: " + id);
@@ -78,7 +79,7 @@ public class Motion {
 
             this.lightId = id.split(" ")[0];
             this.lights = lights.split(" ")[0];
-            this.lightsDegree = Integer.parseInt(lightsDegree.split(" ")[0]);
+            this.lightsDegree = Integer.parseInt(String.valueOf(lightsDegree));
             this.brights = String.valueOf(Integer.parseInt(brights.split(" ")[0]));
 
             // if lights on, execute a query for lights degree
