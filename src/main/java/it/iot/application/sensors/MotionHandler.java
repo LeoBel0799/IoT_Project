@@ -1,7 +1,7 @@
-package it.iot.application.handlers;
+package it.iot.application.sensors;
 
 import it.iot.application.utils.LightStatusListener;
-import it.iot.application.collectors.Motion;
+import it.iot.application.actuators.Motion;
 import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.*;
 import org.json.JSONObject;
@@ -11,15 +11,12 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class MotionHandler implements LightStatusListener {
+public class MotionHandler {
 
-    String brokerUrl = "tcp://127.0.0.1:1883"; // Cambiare l'URL del broker MQTT se necessario
-    String clientId = "CoapToMqttClient"; // Un identificativo univoco per il client MQTT
-    String topic = "coap/sensor/data"; // Il topic MQTT a cui inviare il payload
+    String brokerUrl; // Cambiare l'URL del broker MQTT se necessario
+    String clientId; // Un identificativo univoco per il client MQTT
+    String topic; // Il topic MQTT a cui inviare il payload
     private MqttClient mqttClient;
-    private LightStatusHandler lightStatusHandler; // Nuovo campo per il riferimento al client MQTT di Light
-    private int lightsOnCount;
-    private int lightsOffCount;
     Motion motion;
 
 
@@ -27,7 +24,6 @@ public class MotionHandler implements LightStatusListener {
         this.brokerUrl = brokerUrl;
         this.clientId = clientId;
         this.topic = topic;
-        motion.setLightStatusistener(this);
 
     }
 
@@ -62,21 +58,13 @@ public class MotionHandler implements LightStatusListener {
                         String lights = (String) genreJsonObject.get("lights");
                         int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
                         int brights = Integer.parseInt((String) genreJsonObject.get("brights"));
-                        int numFireup = motion.getLightsOnCount();// Numero di accensioni delle luci
-                        int numTurnOffs = motion.getLightsOffCount(); // Numero di spegnimenti delle luci
-                        double lightIntensity = 20;
-                        // Intensità media della luce
-
-                        // Calcolo del wear level
-                        double wearLevel = calculateWearLevel(numFireup, numTurnOffs, lightIntensity);
-                        handleWearLevel(wearLevel);
 
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(id,lights, lightsDegree,brights, (int) wearLevel);
+                        byte[] coapPayload = createCoapPayload(id,lights, lightsDegree,brights);
 
                         // Chiamare il metodo handleMqttMessage della classe it.iot.collectors.Motion
                         motion.handleMqttMessage(coapPayload);
-                        lightStatusHandler.setWearLevel(wearLevel);
+
                     } catch (ParseException | ConnectorException | IOException e) {
                         e.printStackTrace();
                         throw new RuntimeException(e);
@@ -92,24 +80,12 @@ public class MotionHandler implements LightStatusListener {
         }
     }
 
-    public void handleWearLevel(double wearLevel) {
-        // Chiamare il metodo publishWearLevel della classe it.iot.handlers.LightStatusHandler per inviare il valore di wearLevel all'MQTT di it.iot.handlers.LightStatusHandler
-        lightStatusHandler.publishWearLevel(wearLevel);
-    }
-
-    private double calculateWearLevel(int numAccensioni, int numSpegnimenti, double lightIntensity) {
-        // Esempio di calcolo del wear level
-        // Implementa il calcolo in base ai dati reali che hai dai sensori
-        return (numSpegnimenti / (double) (numAccensioni + numSpegnimenti)) * lightIntensity;
-    }
-
-    private byte[] createCoapPayload(Integer id, String lights, int lightsDegree, int brights, int wearLevel) {
+    private byte[] createCoapPayload(Integer id, String lights, int lightsDegree, int brights) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id",id);
         jsonObject.put("lights", lights);
         jsonObject.put("lightsDegree", lightsDegree);
-        jsonObject.put("brights", lightsDegree);
-        jsonObject.put("wearLevel", wearLevel);
+        jsonObject.put("brights", brights);
 
         String payloadStr = jsonObject.toString();
         return payloadStr.getBytes(StandardCharsets.UTF_8);
@@ -124,12 +100,4 @@ public class MotionHandler implements LightStatusListener {
         }
     }
 
-
-    @Override
-    public void onLightsStatusUpdated(int lightsOnCount, int lightsOffCount) {
-        this.lightsOnCount = lightsOnCount;
-        this.lightsOffCount = lightsOffCount;
-        System.out.println("Lights On Count: " + lightsOnCount);
-        System.out.println("Lights Off Count: " + lightsOffCount);
-    }
 }

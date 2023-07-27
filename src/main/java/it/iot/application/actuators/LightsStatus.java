@@ -1,4 +1,4 @@
-package it.iot.application.collectors;
+package it.iot.application.actuators;
 
 import it.iot.application.DB.DB;
 import org.eclipse.californium.core.CoapClient;
@@ -86,11 +86,10 @@ public class LightsStatus {
         try {
             System.out.println(this.connection);
             // Prima query per inserire i dati in coapalarm
-            String sql1 = "INSERT INTO `coaplightstatus`(`id`,`lightFulimnated`, `wearLevel`) VALUES (?,?, ?)";
+            String sql1 = "INSERT INTO `coaplightstatus`(`id`,`lightFulimnated`) VALUES (?,?, ?)";
             PreparedStatement preparedStatement1 = this.connection.prepareStatement(sql1);
             preparedStatement1.setInt(1, Integer.parseInt(this.lightId));
             preparedStatement1.setInt(2, Integer.parseInt(lightFulminated));
-            preparedStatement1.setInt(3, (int) wearLevel);
             preparedStatement1.executeUpdate();
 
             // Imposta il campo 'alarm' in base al grado di usura
@@ -143,4 +142,6 @@ public class LightsStatus {
         LocalDateTime now = LocalDateTime.now();
         return formatter.format(now);
     }
+
+
 }

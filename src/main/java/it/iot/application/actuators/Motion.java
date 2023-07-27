@@ -1,4 +1,4 @@
-package it.iot.application.collectors;
+package it.iot.application.actuators;
 
 import it.iot.application.DB.DB;
 import it.iot.application.utils.LightStatusListener;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-public class Motion {
+public class Motion implements LightStatusListener {
     private DB db;
     private Connection connection;
     private String address;
@@ -35,10 +35,8 @@ public class Motion {
     private String brights; //abbaglianti accesi o spenti
     private int lightsOnCount; // Contatore per il numero di volte in cui le luci sono state accese
     private int lightsOffCount; // Contatore per il numero di volte in cui le luci sono state spente
-    private int wearLevel;
     public MqttClient lightMqttClient; // Nuovo campo per il riferimento al client MQTT di Light
     private Handler Logging;
-    private String lightsDegreeDescription;
     private LightStatusListener lightStatusListener;
 
 
@@ -54,9 +52,6 @@ public class Motion {
         System.out.println("Motion resource initialized");
     }
 
-    public void setLightStatusistener(LightStatusListener listener){
-        this.lightStatusListener = listener;
-    }
 
 
     public void handleMqttMessage(byte[] payload) throws ConnectorException, IOException {
@@ -70,12 +65,11 @@ public class Motion {
             String lights = nodeData.get("lights");
             String lightsDegree = nodeData.get("lightsDegree");
             String brights = nodeData.get("brights");
-            String wearLevel = nodeData.get("wearLevel");
             System.out.println("Detection value node:");
             System.out.println("id: " + id);
             System.out.println("lights: " + lights);
             System.out.println("lightsDegree: " + lightsDegree);
-            System.out.println("wearLevel: " + wearLevel);
+            System.out.println("brights: " + brights);
 
             this.lightId = id.split(" ")[0];
             this.lights = lights.split(" ")[0];
@@ -91,14 +85,16 @@ public class Motion {
                 // Incrementa il contatore di spegnimenti delle luci
                 lightsOffCount++;
             }
-            this.executeQuery(wearLevel);
+            this.executeQuery();
             // Chiamare il metodo di callback per passare i valori aggiornati alla classe it.iot.handlers.MotionHandler
             if (lightStatusListener != null) {
                 lightStatusListener.onLightsStatusUpdated(lightsOnCount, lightsOffCount);
             }
+            double calculatedWearLevel = calculateWearLevel(lightsOnCount, lightsOffCount, 20); // 20 è un valore di esempio per l'intensità della luce
+
             // Invia il valore di "wearLevel" al broker MQTT di Light come messaggio
-            String lightTopic = "light/sensor/data";
-            String wearLevelMessage = "{ \"wearLevel\": " + wearLevel + " }";
+            String lightTopic = "coap/sensor/light";
+            String wearLevelMessage = "{ \"wearLevel\": " + calculatedWearLevel + " }";
             MqttMessage mqttMessage = new MqttMessage(wearLevelMessage.getBytes());
             try {
                 this.lightMqttClient.publish(lightTopic, mqttMessage);
@@ -129,11 +125,22 @@ public class Motion {
         return data;
     }
 
+    // Implementazione del metodo onLightsStatusUpdated dell'interfaccia LightStatusListener
+    @Override
+    public void onLightsStatusUpdated(int lightsOnCount, int lightsOffCount) {
+        System.out.println("Lights On Count: " + lightsOnCount);
+        System.out.println("Lights Off Count: " + lightsOffCount);
+    }
 
-    public void executeQuery(String wearLevel) {
+    private double calculateWearLevel(int numAccensioni, int numSpegnimenti, double lightIntensity) {
+        // Implementa il calcolo in base ai dati reali che hai dai sensori
+        return (numSpegnimenti / (double) (numAccensioni + numSpegnimenti)) * lightIntensity;
+    }
+
+    public void executeQuery() {
         try {
             System.out.println(this.connection);
-            String sql = "INSERT INTO `coapmotion` (`id`,`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`,`wearLevel`) VALUES (?,?, ?, ?, ?, ?, ?,?)";
+            String sql = "INSERT INTO `coapmotion` (`id`,`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`) VALUES (?,?, ?, ?, ?, ?, ?,?)";
             PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
             preparedStatement.setInt(1, Integer.parseInt(this.lightId));
             preparedStatement.setInt(2, this.lights.equals("T") ? 1 : 0);
@@ -142,7 +149,6 @@ public class Motion {
             preparedStatement.setInt(5, this.lightsOnCount);
             preparedStatement.setInt(6, this.lightsOffCount);
             preparedStatement.setString(7, getFormattedTimestamp());
-            preparedStatement.setString(8, String.valueOf(wearLevel));
             preparedStatement.executeUpdate();
 
             // Show data log
@@ -202,16 +208,5 @@ public class Motion {
         Request request = new Request(CoAP.Code.GET);
         request.getOptions().setAccept(MediaTypeRegistry.APPLICATION_JSON);
         client.advanced(request);
-    }
-
-
-    // Metodo getter per lightsOnCount
-    public int getLightsOnCount() {
-        return lightsOnCount;
-    }
-
-    // Metodo getter per lightsOffCount
-    public int getLightsOffCount() {
-        return lightsOffCount;
     }
 }

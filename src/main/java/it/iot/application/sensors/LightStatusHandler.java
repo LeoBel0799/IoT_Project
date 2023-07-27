@@ -1,6 +1,6 @@
-package it.iot.application.handlers;
+package it.iot.application.sensors;
 
-import it.iot.application.collectors.LightsStatus;
+import it.iot.application.actuators.LightsStatus;
 import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.*;
 import org.json.JSONObject;
@@ -11,9 +11,9 @@ import java.nio.charset.StandardCharsets;
 
 public class LightStatusHandler {
 
-    String lightBrokerUrl = "tcp://127.0.0.1:1883";
-    String lightClientId = "LightMqttClient";
-    String lightTopic = "light/sensor/data";
+    String lightBrokerUrl;
+    String lightClientId;
+    String lightTopic;
     MqttClient mqttClient;
     LightsStatus lightsStatus;
     private double wearLevel;

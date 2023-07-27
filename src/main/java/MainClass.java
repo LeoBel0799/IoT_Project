@@ -1,8 +1,7 @@
-import it.iot.application.collectors.LightsStatus;
-import it.iot.application.collectors.Motion;
-import it.iot.application.handlers.LightStatusHandler;
-import it.iot.application.handlers.MotionHandler;
-import org.eclipse.paho.client.mqttv3.MqttClient;
+import it.iot.application.actuators.LightsStatus;
+import it.iot.application.actuators.Motion;
+import it.iot.application.sensors.LightStatusHandler;
+import it.iot.application.sensors.MotionHandler;
 
 
 /*
@@ -54,7 +53,7 @@ public class MainClass {
         // Configuro i parametri del broker MQTT di Light
         String lightBrokerUrl = "tcp://127.0.0.1:1883";
         String lightClientId = "LightMqttClient";
-        String lightTopic = "light/sensor/light";
+        String lightTopic = "coap/sensor/light";
 
         try {
             // Create an instance of the it.iot.collectors.Motion class
