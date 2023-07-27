@@ -49,12 +49,12 @@ public class MainClass {
         // Configuro i parametri del broker MQTT di it.iot.collectors.Motion
         String motionBrokerUrl = "tcp://127.0.0.1:1883";
         String motionClientId = "CoapToMqttClient";
-        String motionTopic = "coap/sensor/data";
+        String motionTopic = "coap/sensor/motion";
 
         // Configuro i parametri del broker MQTT di Light
         String lightBrokerUrl = "tcp://127.0.0.1:1883";
         String lightClientId = "LightMqttClient";
-        String lightTopic = "light/sensor/data";
+        String lightTopic = "light/sensor/light";
 
         try {
             // Create an instance of the it.iot.collectors.Motion class
