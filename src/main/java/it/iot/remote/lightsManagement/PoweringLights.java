@@ -1,4 +1,4 @@
-package it.iot.remote;
+package it.iot.remote.lightsManagement;
 
 import java.io.IOException;
 

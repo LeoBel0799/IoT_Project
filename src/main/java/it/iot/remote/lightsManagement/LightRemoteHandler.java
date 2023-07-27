@@ -1,4 +1,4 @@
-package it.iot.remote;
+package it.iot.remote.lightsManagement;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
