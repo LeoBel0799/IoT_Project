@@ -1,6 +1,10 @@
 package it.iot.remote;
 
 import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Request;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -63,6 +67,55 @@ public class LightRemoteHandler {
             return "UNKNOWN";
         }
     }
+
+
+    public void turnLightsOn(String address, String request) throws IOException {
+        String lightStatus = getLightsOnOff(address);
+        if (lightStatus.equalsIgnoreCase("ON")) {
+            System.out.println("[!] Lights are already ON.");
+        } else {
+            performPutRequest(address, request);
+            System.out.println("[+] Lights turned ON.");
+        }
+    }
+
+    public void turnLightsOff(String address, String request) throws IOException {
+        String lightStatus = getLightsOnOff(address);
+        if (lightStatus.equalsIgnoreCase("OFF")) {
+            System.out.println("[!] Lights are already OFF.");
+        } else {
+            performPutRequest(address, request);
+            System.out.println("[+] Lights turned OFF.");
+        }
+    }
+
+    private void performPutRequest(String address, String order) throws IOException {
+        String coapUrl = "coap://" + address + "/sensor/motion";
+        CoapClient client = new CoapClient(coapUrl);
+        try {
+            Request request = new Request(CoAP.Code.PUT);
+            request.getOptions().setAccept(MediaTypeRegistry.APPLICATION_JSON);
+            request.setPayload(order.getBytes());
+            CoapResponse coapResponse = client.advanced(request);
+            if (coapResponse != null) {
+                CoAP.ResponseCode responseCode = coapResponse.getCode();
+                if (responseCode == CoAP.ResponseCode.CHANGED) {
+                    System.out.println("[+] PUT request successful.");
+                } else {
+                    System.out.println("[!] PUT request failed. Response code: " + responseCode);
+                }
+            } else {
+                System.out.println("[!] No response received for PUT request.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("[!] # Error during PUT request.");
+        } finally {
+            client.shutdown();
+        }
+    }
+
+
 
     public int getDegreeLights(String address) throws IOException {
         //Questo metodo dice che fari sono accesi se posizione o abbaglianti
