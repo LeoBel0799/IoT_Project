@@ -276,5 +276,4 @@ public class LightRemoteHandler {
             return -1.0;
         }
     }
-    //TODO: Controllare le get e scrivere le put (devo andare al cesso)
 }
