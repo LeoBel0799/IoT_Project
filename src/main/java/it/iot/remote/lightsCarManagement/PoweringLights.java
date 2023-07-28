@@ -1,5 +1,7 @@
 package it.iot.remote.lightsCarManagement;
 
+import org.eclipse.californium.elements.exception.ConnectorException;
+
 import java.io.IOException;
 
 public class PoweringLights implements Runnable {
@@ -40,7 +42,7 @@ public class PoweringLights implements Runnable {
                     e.printStackTrace();
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | ConnectorException e) {
             e.printStackTrace();
         }
     }

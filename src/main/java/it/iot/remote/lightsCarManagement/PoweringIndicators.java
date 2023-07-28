@@ -1,5 +1,7 @@
 package it.iot.remote.lightsCarManagement;
 
+import org.eclipse.californium.elements.exception.ConnectorException;
+
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -70,7 +72,7 @@ public class PoweringIndicators implements Runnable {
                     e.printStackTrace();
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | ConnectorException e) {
             e.printStackTrace();
         }
     }

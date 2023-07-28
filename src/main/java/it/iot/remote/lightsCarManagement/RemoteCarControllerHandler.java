@@ -5,6 +5,7 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.elements.exception.ConnectorException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -28,6 +29,33 @@ public class RemoteCarControllerHandler {
         return instance;
     }
 
+
+    public String getLightsOnOff(String address) throws ConnectorException, IOException {
+        String uri = "coap://" + address + "/sensor/motion";
+
+        CoapClient coapClient = new CoapClient(uri);
+        CoapResponse coapResponse = coapClient.get();
+
+        if (coapResponse != null && coapResponse.isSuccess()) {
+            String responseText = coapResponse.getResponseText();
+            try {
+                JSONParser parser = new JSONParser();
+                JSONObject obj = (JSONObject) parser.parse(responseText);
+                String lightStatus = (String) obj.get("lights");
+                return lightStatus;
+            } catch (ParseException e) {
+                e.printStackTrace();
+                System.out.println(" [!] # Error during reading JSON Response");
+                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+                return "UNKNOWN";
+            }
+        } else {
+            System.out.println(" [!] # Error during CoAP request");
+            // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+            return "UNKNOWN";
+        }
+    }
+/*
     public String getLightsOnOff(String address) throws IOException {
         //Questo metodo restituisce se i fari sono accesi o spenti
         String request = "GET " + "coap://" + address + "/sensor/motion"
@@ -68,8 +96,9 @@ public class RemoteCarControllerHandler {
         }
     }
 
+*/
 
-    public void turnLightsOn(String address, String request) throws IOException {
+    public void turnLightsOn(String address, String request) throws IOException, ConnectorException {
         String lightStatus = getLightsOnOff(address);
         if (lightStatus.equalsIgnoreCase("ON")) {
             System.out.println("[!] Lights are already ON.");
@@ -79,7 +108,7 @@ public class RemoteCarControllerHandler {
         }
     }
 
-    public void turnLightsOff(String address, String request) throws IOException {
+    public void turnLightsOff(String address, String request) throws IOException, ConnectorException {
         String lightStatus = getLightsOnOff(address);
         if (lightStatus.equalsIgnoreCase("OFF")) {
             System.out.println("[!] Lights are already OFF.");
@@ -95,15 +124,7 @@ public class RemoteCarControllerHandler {
 
     }
 
-
-    public void turnIndicatorsOff(String address, String request) throws IOException{
-        System.out.println("[+] Turning Indicators OFF.");
-        performPutRequest(address,request);
-
-    }
-
-
-    public void turnBrightsOn(String address, String request) throws IOException {
+    public void turnBrightsOn(String address, String request) throws IOException, ConnectorException {
         Integer lightStatus = getBrightsOnOff(address);
         if (lightStatus == 1) {
             System.out.println("[!] Brights are already ON.");
@@ -127,7 +148,7 @@ public class RemoteCarControllerHandler {
     }
 
 
-    public void turnBrightsOff(String address, String request) throws IOException {
+    public void turnBrightsOff(String address, String request) throws IOException, ConnectorException {
         Integer lightStatus = getBrightsOnOff(address);
         if (lightStatus == 0) {
             System.out.println("[!] Brights are already OFF.");
@@ -164,49 +185,33 @@ public class RemoteCarControllerHandler {
         }
     }
 
+    public int getBrightsOnOff(String address) throws ConnectorException, IOException {
+        String uri = "coap://" + address + "/sensor/motion";
 
+        CoapClient coapClient = new CoapClient(uri);
+        CoapResponse coapResponse = coapClient.get();
 
-    public int getDegreeLights(String address) throws IOException {
-        //Questo metodo dice che fari sono accesi se posizione o abbaglianti
-        String request = "GET " + "coap://" + address + "/sensor/motion"
-                + "Host: " + address + "\r\n"
-                + "Connection: close\r\n\r\n";
-        System.out.println("[+] GET request to Motion sensor");
-        try (Socket socket = new Socket(address, 5683);
-             OutputStream os = socket.getOutputStream();
-             InputStream is = socket.getInputStream()) {
-
-            os.write(request.getBytes());
-            os.flush();
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder response = new StringBuilder();
-            while ((bytesRead = is.read(buffer)) != -1) {
-                response.append(new String(buffer, 0, bytesRead));
-            }
-
-            String responseString = response.toString();
+        if (coapResponse != null && coapResponse.isSuccess()) {
+            String responseText = coapResponse.getResponseText();
             try {
                 JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseString);
-                int lightDegreeStatus = (int) obj.get("lightsDegree");
-                return lightDegreeStatus;
+                JSONObject obj = (JSONObject) parser.parse(responseText);
+                Integer brightStatus = (Integer) obj.get("brights");
+                return brightStatus;
             } catch (ParseException e) {
                 e.printStackTrace();
                 System.out.println(" [!] # Error during reading JSON Response");
                 // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
                 return -1;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" [!] # Error during socket communication");
-            // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+        } else {
+            System.out.println(" [!] # Error during CoAP request");
+            // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return -1;
         }
     }
 
-    public int getBrightsOnOff(String address) throws IOException {
+/*    public int getBrightsOnOff(String address) throws IOException {
         //Questo metodo restituisce se i fari sono accesi o spenti
         String request = "GET " + "coap://" + address + "/sensor/motion"
                 + "Host: " + address + "\r\n"
@@ -244,9 +249,9 @@ public class RemoteCarControllerHandler {
             // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return -1;
         }
-    }
+    }*/
 
-    public Boolean getFulminated(String address) throws IOException {
+   /* public Boolean getFulminated(String address) throws IOException {
         //Questo metodo restituisce se i fari sono accesi o spenti
         String request = "GET " + "coap://" + address + "/sensor/light"
                 + "Host: " + address + "\r\n"
@@ -284,9 +289,37 @@ public class RemoteCarControllerHandler {
             // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return false;
         }
-    }
+    }*/
 
-    public Double getWearLevel(String address) throws IOException {
+
+   public Boolean getFulminated(String address) throws ConnectorException, IOException {
+       String uri = "coap://" + address + "/sensor/light";
+
+       CoapClient coapClient = new CoapClient(uri);
+       CoapResponse coapResponse = coapClient.get();
+
+       if (coapResponse != null && coapResponse.isSuccess()) {
+           String responseText = coapResponse.getResponseText();
+           try {
+               JSONParser parser = new JSONParser();
+               JSONObject obj = (JSONObject) parser.parse(responseText);
+               Boolean fulminated = (Boolean) obj.get("lightFulminated");
+               return fulminated;
+           } catch (ParseException e) {
+               e.printStackTrace();
+               System.out.println(" [!] # Error during reading JSON Response");
+               // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+               return false;
+           }
+       } else {
+           System.out.println(" [!] # Error during CoAP request");
+           // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+           return false;
+       }
+   }
+
+
+   /* public Double getWearLevel(String address) throws IOException {
         //Questo metodo restituisce se i fari sono accesi o spenti
         String request = "GET " + "coap://" + address + "/sensor/light"
                 + "Host: " + address + "\r\n"
@@ -324,8 +357,32 @@ public class RemoteCarControllerHandler {
             // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return -1.0;
         }
+    }*/
+
+
+    public Double getWearLevel(String address) throws ConnectorException, IOException {
+        String uri = "coap://" + address + "/sensor/light";
+
+        CoapClient coapClient = new CoapClient(uri);
+        CoapResponse coapResponse = coapClient.get();
+
+        if (coapResponse != null && coapResponse.isSuccess()) {
+            String responseText = coapResponse.getResponseText();
+            try {
+                JSONParser parser = new JSONParser();
+                JSONObject obj = (JSONObject) parser.parse(responseText);
+                Double wearLevel = (Double) obj.get("wearLevel");
+                return wearLevel;
+            } catch (ParseException e) {
+                e.printStackTrace();
+                System.out.println(" [!] # Error during reading JSON Response");
+                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+                return -1.0;
+            }
+        } else {
+            System.out.println(" [!] # Error during CoAP request");
+            // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+            return -1.0;
+        }
     }
-
-
-
 }

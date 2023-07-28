@@ -1,5 +1,7 @@
 package it.iot.remote.lightsCarManagement;
 
+import org.eclipse.californium.elements.exception.ConnectorException;
+
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,7 +55,7 @@ public class PoweringHorn implements Runnable {
                                     }
                                 }, 2000); // 2000 millisecondi (2 secondi) - breve periodo
 
-                            } catch (IOException e) {
+                            } catch (IOException | ConnectorException e) {
                                 e.printStackTrace();
                             }
                         }
@@ -65,7 +67,7 @@ public class PoweringHorn implements Runnable {
             } else {
                 // Gestisci il caso in cui lo stato delle luci non è valido
             }
-        } catch (IOException e) {
+        } catch (IOException | ConnectorException e) {
             e.printStackTrace();
         }
     }
