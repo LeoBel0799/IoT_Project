@@ -89,6 +89,20 @@ public class RemoteCarControllerHandler {
         }
     }
 
+    public void turnIndicatorsOn(String address, String request) throws IOException {
+        System.out.println("[+] Turning Indicators ON.");
+        performPutRequest(address,request);
+
+    }
+
+
+    public void turnIndicatorsOff(String address, String request) throws IOException{
+        System.out.println("[+] Turning Indicators OFF.");
+        performPutRequest(address,request);
+
+    }
+
+
     public void turnBrightsOn(String address, String request) throws IOException {
         Integer lightStatus = getBrightsOnOff(address);
         if (lightStatus == 1) {
@@ -100,14 +114,14 @@ public class RemoteCarControllerHandler {
     }
 
     public void turnHornOff(String address, String request) throws IOException {
-        System.out.println("[!] Turning Horn OFF.");
+        System.out.println("[+] Turning Horn OFF.");
         performPutRequest(address,request);
 
     }
 
 
     public void turnHornOn(String address, String request) throws IOException{
-        System.out.println("[!] Turning Horn ON.");
+        System.out.println("[+] Turning Horn ON.");
         performPutRequest(address,request);
 
     }
@@ -311,6 +325,7 @@ public class RemoteCarControllerHandler {
             return -1.0;
         }
     }
+
 
 
 }
