@@ -1,10 +1,10 @@
-package it.iot.remote.lightsManagement;
+package it.iot.remote.lightsCarManagement;
 
 import java.io.IOException;
 
 public class PoweringLights implements Runnable {
 
-    private final static LightRemoteHandler coapClient = LightRemoteHandler.getInstance();
+    private final static RemoteCarControllerHandler coapClient = RemoteCarControllerHandler.getInstance();
     private static final double MAX_WEAR_LEVEL = 5.0;
     String powerFlag;
     String address;
@@ -20,9 +20,10 @@ public class PoweringLights implements Runnable {
         String status = null;
         try {
             Double wearLevelreceived = coapClient.getWearLevel(address);
+            Boolean fulminated = coapClient.getFulminated(address);
             String res;
             status = coapClient.getLightsOnOff(address);
-            if (status.equals("ON") && wearLevelreceived<MAX_WEAR_LEVEL) {
+            if (status.equals("ON") && wearLevelreceived<MAX_WEAR_LEVEL && !fulminated) {
                 try {
                     res = "{\"mode\": \"ON\"}";
                     System.out.println("[!] Sending PUT request (ON) to Lights");

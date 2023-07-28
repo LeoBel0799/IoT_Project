@@ -27,7 +27,7 @@ public class LightsStatus {
     private String address;
     private String resource;
     private String lightId;
-    private String lightFulminated; // Stato delle luci, true se sono fulminate, false altrimenti
+    private Boolean lightFulminated; // Stato delle luci, true se sono fulminate, false altrimenti
     private double wearLevel;
     private Handler Logging;
 
@@ -46,13 +46,13 @@ public class LightsStatus {
 
 
 
-    public void handleMqttMessage(byte[] payload) throws ConnectorException, IOException {
+    public double handleMqttMessage(byte[] payload) throws ConnectorException, IOException {
         System.out.println("Callback called, resource arrived");
         if (payload != null && payload.length > 0) {
             String payloadStr = new String(payload);
             JSONObject jsonPayload = (JSONObject) JSONValue.parse(payloadStr);
             String id = (String)jsonPayload.get("id");
-            String lightFulminated = (String)jsonPayload.get("lightFulminated");
+            Boolean lightFulminated = (Boolean) jsonPayload.get("lightFulminated");
             String wearLevel = (String)jsonPayload.get("wearLevel");
             System.out.println("Detection value node:");
             System.out.println("id: " + id);
@@ -69,9 +69,9 @@ public class LightsStatus {
 
             // Verifica se le luci sono fulminate in base al grado di usura massimo raggiunto
             if (this.wearLevel >= MAX_WEAR_LEVEL) {
-                this.lightFulminated = "T";
+                this.lightFulminated.equals("T");
             } else {
-                this.lightFulminated = "F";
+                this.lightFulminated.equals("F");
             }
 
             // Salva il valore del campo lightFulminated nel database solo quando il grado di usura è al massimo
@@ -79,17 +79,17 @@ public class LightsStatus {
                 executeQueryLight(lightFulminated);
             }
         }
-
+        return wearLevel;
     }
 
-    private void executeQueryLight(String lightFulminated) {
+    private void executeQueryLight(Boolean lightFulminated) {
         try {
             System.out.println(this.connection);
             // Prima query per inserire i dati in coapalarm
             String sql1 = "INSERT INTO `coaplightstatus`(`id`,`lightFulimnated`) VALUES (?,?, ?)";
             PreparedStatement preparedStatement1 = this.connection.prepareStatement(sql1);
             preparedStatement1.setInt(1, Integer.parseInt(this.lightId));
-            preparedStatement1.setInt(2, Integer.parseInt(lightFulminated));
+            preparedStatement1.setBoolean(2, (lightFulminated));
             preparedStatement1.executeUpdate();
 
             // Imposta il campo 'alarm' in base al grado di usura

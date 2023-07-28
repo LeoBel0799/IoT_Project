@@ -1,4 +1,4 @@
-package it.iot.remote.lightsManagement;
+package it.iot.remote.lightsCarManagement;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
@@ -14,17 +14,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class LightRemoteHandler {
-    private static LightRemoteHandler instance = null;
+public class RemoteCarControllerHandler {
+    private static RemoteCarControllerHandler instance = null;
     private static CoapClient motionApp = null;
     private static CoapClient lightStatusApp = null;
     private static CoapClient brightsHandler = null;
     private static CoapClient degreeLightsHandler = null;
     private static CoapClient LightPower = null;
 
-    public static LightRemoteHandler getInstance() {
+    public static RemoteCarControllerHandler getInstance() {
         if (instance == null)
-            instance = new LightRemoteHandler();
+            instance = new RemoteCarControllerHandler();
         return instance;
     }
 
@@ -88,6 +88,41 @@ public class LightRemoteHandler {
             System.out.println("[+] Lights turned OFF.");
         }
     }
+
+    public void turnBrightsOn(String address, String request) throws IOException {
+        Integer lightStatus = getBrightsOnOff(address);
+        if (lightStatus == 1) {
+            System.out.println("[!] Brights are already ON.");
+        } else {
+            performPutRequest(address, request);
+            System.out.println("[+] Brights turned ON.");
+        }
+    }
+
+    public void turnHornOff(String address, String request) throws IOException {
+        System.out.println("[!] Turning Horn OFF.");
+        performPutRequest(address,request);
+
+    }
+
+
+    public void turnHornOn(String address, String request) throws IOException{
+        System.out.println("[!] Turning Horn ON.");
+        performPutRequest(address,request);
+
+    }
+
+
+    public void turnBrightsOff(String address, String request) throws IOException {
+        Integer lightStatus = getBrightsOnOff(address);
+        if (lightStatus == 0) {
+            System.out.println("[!] Brights are already OFF.");
+        } else {
+            performPutRequest(address, request);
+            System.out.println("[+] Brights turned OFF.");
+        }
+    }
+
 
     private void performPutRequest(String address, String order) throws IOException {
         String coapUrl = "coap://" + address + "/sensor/motion";
@@ -157,7 +192,7 @@ public class LightRemoteHandler {
         }
     }
 
-    public String getBrightsOnOff(String address) throws IOException {
+    public int getBrightsOnOff(String address) throws IOException {
         //Questo metodo restituisce se i fari sono accesi o spenti
         String request = "GET " + "coap://" + address + "/sensor/motion"
                 + "Host: " + address + "\r\n"
@@ -181,23 +216,23 @@ public class LightRemoteHandler {
             try {
                 JSONParser parser = new JSONParser();
                 JSONObject obj = (JSONObject) parser.parse(responseString);
-                String brightStatus = (String) obj.get("brights");
+                Integer brightStatus = (Integer) obj.get("brights");
                 return brightStatus;
             } catch (ParseException e) {
                 e.printStackTrace();
                 System.out.println(" [!] # Error during reading JSON Response");
                 // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-                return "UNKNOWN";
+                return -1;
             }
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println(" [!] # Error during socket communication");
             // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-            return "UNKNOWN";
+            return -1;
         }
     }
 
-    public String getFulminated(String address) throws IOException {
+    public Boolean getFulminated(String address) throws IOException {
         //Questo metodo restituisce se i fari sono accesi o spenti
         String request = "GET " + "coap://" + address + "/sensor/light"
                 + "Host: " + address + "\r\n"
@@ -221,19 +256,19 @@ public class LightRemoteHandler {
             try {
                 JSONParser parser = new JSONParser();
                 JSONObject obj = (JSONObject) parser.parse(responseString);
-                String fulminated = (String) obj.get("lightFulminated");
+                Boolean fulminated = (Boolean) obj.get("lightFulminated");
                 return fulminated;
             } catch (ParseException e) {
                 e.printStackTrace();
                 System.out.println(" [!] # Error during reading JSON Response");
                 // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-                return "UNKNOWN";
+                return false;
             }
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println(" [!] # Error during socket communication");
             // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-            return "UNKNOWN";
+            return false;
         }
     }
 
@@ -276,4 +311,6 @@ public class LightRemoteHandler {
             return -1.0;
         }
     }
+
+
 }

@@ -32,7 +32,7 @@ public class Motion implements LightStatusListener {
     private String lightId;
     private String lights; //luci accese o spente
     private int lightsDegree; //1 posizione - 2 anabbaglianti
-    private String brights; //abbaglianti accesi o spenti
+    private int brights; //abbaglianti accesi o spenti - 1 accesi - 0 spenti
     private int lightsOnCount; // Contatore per il numero di volte in cui le luci sono state accese
     private int lightsOffCount; // Contatore per il numero di volte in cui le luci sono state spente
     public MqttClient lightMqttClient; // Nuovo campo per il riferimento al client MQTT di Light
@@ -74,7 +74,7 @@ public class Motion implements LightStatusListener {
             this.lightId = id.split(" ")[0];
             this.lights = lights.split(" ")[0];
             this.lightsDegree = Integer.parseInt(String.valueOf(lightsDegree));
-            this.brights = String.valueOf(Integer.parseInt(brights.split(" ")[0]));
+            this.brights = Integer.parseInt(String.valueOf(Integer.parseInt(brights.split(" ")[0])));
 
             // if lights on, execute a query for lights degree
             // Aggiornare i contatori di accensioni e spegnimenti delle luci
@@ -143,9 +143,9 @@ public class Motion implements LightStatusListener {
             String sql = "INSERT INTO `coapmotion` (`id`,`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`) VALUES (?,?, ?, ?, ?, ?, ?,?)";
             PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
             preparedStatement.setInt(1, Integer.parseInt(this.lightId));
-            preparedStatement.setInt(2, this.lights.equals("T") ? 1 : 0);
+            preparedStatement.setInt(2, this.lights.equals("ON") ? 1 : 0);
             preparedStatement.setInt(3, this.lightsDegree);
-            preparedStatement.setString(4, this.brights);
+            preparedStatement.setString(4, String.valueOf(this.brights));
             preparedStatement.setInt(5, this.lightsOnCount);
             preparedStatement.setInt(6, this.lightsOffCount);
             preparedStatement.setString(7, getFormattedTimestamp());
