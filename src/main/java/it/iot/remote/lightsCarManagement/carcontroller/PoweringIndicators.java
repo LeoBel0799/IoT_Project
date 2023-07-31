@@ -1,4 +1,4 @@
-package it.iot.remote.lightsCarManagement;
+package it.iot.remote.lightsCarManagement.carcontroller;
 
 import org.eclipse.californium.elements.exception.ConnectorException;
 

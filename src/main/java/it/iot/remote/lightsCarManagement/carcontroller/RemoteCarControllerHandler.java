@@ -1,4 +1,4 @@
-package it.iot.remote.lightsCarManagement;
+package it.iot.remote.lightsCarManagement.carcontroller;
 
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
@@ -11,18 +11,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 
 public class RemoteCarControllerHandler {
     private static RemoteCarControllerHandler instance = null;
-    private static CoapClient motionApp = null;
-    private static CoapClient lightStatusApp = null;
-    private static CoapClient brightsHandler = null;
-    private static CoapClient degreeLightsHandler = null;
-    private static CoapClient LightPower = null;
-
     public static RemoteCarControllerHandler getInstance() {
         if (instance == null)
             instance = new RemoteCarControllerHandler();
