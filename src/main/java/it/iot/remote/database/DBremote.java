@@ -32,7 +32,7 @@ public class DBremote {
     }
 
 
-    public void insertInfo(int lightid, String address) {
+    public static void insertInfo(int lightid, String address) {
         String insert = "INSERT INTO info (lightid,address) VALUES (?, ?, ?)";
         try (Connection connection = connectDbs()) {
             try (PreparedStatement update = connection.prepareStatement(insert)
