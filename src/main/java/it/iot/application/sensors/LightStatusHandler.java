@@ -18,11 +18,10 @@ public class LightStatusHandler {
     LightsStatus lightsStatus;
     private double wearLevel;
 
-    public LightStatusHandler(String brokerUrl, String clientId, String topic, LightsStatus lightsStatus) {
+    public LightStatusHandler(String brokerUrl, String clientId, String topic) {
         this.lightBrokerUrl = brokerUrl;
         this.lightClientId = clientId;
         this.lightTopic = topic;
-        this.lightsStatus = lightsStatus;
     }
 
     public void setWearLevel(double wearLevel) {
