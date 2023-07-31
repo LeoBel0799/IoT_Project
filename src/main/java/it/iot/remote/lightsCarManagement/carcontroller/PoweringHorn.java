@@ -23,6 +23,7 @@ public class PoweringHorn implements Runnable {
         try {
             String status;
             status = coapClient.getLightsOnOff(address);
+            powerFlag = status;
             if ((status.equals("ON") || status.equals("OFF"))) {
                 try {
                     // Accendi gli abbaglianti e il clacson

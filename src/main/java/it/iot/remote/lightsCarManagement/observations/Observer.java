@@ -35,8 +35,8 @@ public class Observer {
         motionApp.observe(
                 new CoapHandler() {
                     @Override public void onLoad(CoapResponse response) {
-                        indicators(response, ip);
-                        horn(response,ip);
+                        indicators(response,ip);
+                        horn(response, ip);
                     }
                     @Override public void onError() {
                         System.out.println("[-] BRIGHTS observation failed");
@@ -51,7 +51,8 @@ public class Observer {
         JSONObject obj;
         try {
             obj = (JSONObject) JSONValue.parseWithException(resp);
-            String brights = (String) obj.get("brights");
+            Integer brights = (Integer) obj.get("brights"); //capire se arriva il valore di brights o il comando
+            //ON-OFF
             PoweringIndicators l = new PoweringIndicators(brights,addr);
             Thread threadForIndicators = new Thread(l);
             threadForIndicators.start();

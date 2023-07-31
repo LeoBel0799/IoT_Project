@@ -25,6 +25,7 @@ public class PoweringLights implements Runnable {
             Boolean fulminated = coapClient.getFulminated(address);
             String res;
             status = coapClient.getLightsOnOff(address);
+            powerFlag = status;
             if (status.equals("ON") && wearLevelreceived<MAX_WEAR_LEVEL && !fulminated) {
                 try {
                     res = "{\"mode\": \"ON\"}";

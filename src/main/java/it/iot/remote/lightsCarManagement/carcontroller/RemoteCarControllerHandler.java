@@ -46,48 +46,7 @@ public class RemoteCarControllerHandler {
             return "UNKNOWN";
         }
     }
-/*
-    public String getLightsOnOff(String address) throws IOException {
-        //Questo metodo restituisce se i fari sono accesi o spenti
-        String request = "GET " + "coap://" + address + "/sensor/motion"
-                + "Host: " + address + "\r\n"
-                + "Connection: close\r\n\r\n";
-        System.out.println("[+] GET request to Motion sensor");
-        try (Socket socket = new Socket(address, 5683);
-             OutputStream os = socket.getOutputStream();
-             InputStream is = socket.getInputStream()) {
 
-            os.write(request.getBytes());
-            os.flush();
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder response = new StringBuilder();
-            while ((bytesRead = is.read(buffer)) != -1) {
-                response.append(new String(buffer, 0, bytesRead));
-            }
-
-            String responseString = response.toString();
-            try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseString);
-                String lightStatus = (String) obj.get("lights");
-                return lightStatus;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.out.println(" [!] # Error during reading JSON Response");
-                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-                return "UNKNOWN";
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" [!] # Error during socket communication");
-            // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-            return "UNKNOWN";
-        }
-    }
-
-*/
 
     public void turnLightsOn(String address, String request) throws IOException, ConnectorException {
         String lightStatus = getLightsOnOff(address);
@@ -202,87 +161,6 @@ public class RemoteCarControllerHandler {
         }
     }
 
-/*    public int getBrightsOnOff(String address) throws IOException {
-        //Questo metodo restituisce se i fari sono accesi o spenti
-        String request = "GET " + "coap://" + address + "/sensor/motion"
-                + "Host: " + address + "\r\n"
-                + "Connection: close\r\n\r\n";
-        System.out.println("[+] GET request to Motion sensor");
-        try (Socket socket = new Socket(address, 5683);
-             OutputStream os = socket.getOutputStream();
-             InputStream is = socket.getInputStream()) {
-
-            os.write(request.getBytes());
-            os.flush();
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder response = new StringBuilder();
-            while ((bytesRead = is.read(buffer)) != -1) {
-                response.append(new String(buffer, 0, bytesRead));
-            }
-
-            String responseString = response.toString();
-            try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseString);
-                Integer brightStatus = (Integer) obj.get("brights");
-                return brightStatus;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.out.println(" [!] # Error during reading JSON Response");
-                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-                return -1;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" [!] # Error during socket communication");
-            // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-            return -1;
-        }
-    }*/
-
-   /* public Boolean getFulminated(String address) throws IOException {
-        //Questo metodo restituisce se i fari sono accesi o spenti
-        String request = "GET " + "coap://" + address + "/sensor/light"
-                + "Host: " + address + "\r\n"
-                + "Connection: close\r\n\r\n";
-        System.out.println("[+] GET request to Light sensor");
-        try (Socket socket = new Socket(address, 5683);
-             OutputStream os = socket.getOutputStream();
-             InputStream is = socket.getInputStream()) {
-
-            os.write(request.getBytes());
-            os.flush();
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder response = new StringBuilder();
-            while ((bytesRead = is.read(buffer)) != -1) {
-                response.append(new String(buffer, 0, bytesRead));
-            }
-
-            String responseString = response.toString();
-            try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseString);
-                Boolean fulminated = (Boolean) obj.get("lightFulminated");
-                return fulminated;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.out.println(" [!] # Error during reading JSON Response");
-                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-                return false;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" [!] # Error during socket communication");
-            // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-            return false;
-        }
-    }*/
-
-
    public Boolean getFulminated(String address) throws ConnectorException, IOException {
        String uri = "coap://" + address + "/sensor/light";
 
@@ -308,48 +186,6 @@ public class RemoteCarControllerHandler {
            return false;
        }
    }
-
-
-   /* public Double getWearLevel(String address) throws IOException {
-        //Questo metodo restituisce se i fari sono accesi o spenti
-        String request = "GET " + "coap://" + address + "/sensor/light"
-                + "Host: " + address + "\r\n"
-                + "Connection: close\r\n\r\n";
-        System.out.println("[+] GET request to Light sensor");
-        try (Socket socket = new Socket(address, 5683);
-             OutputStream os = socket.getOutputStream();
-             InputStream is = socket.getInputStream()) {
-
-            os.write(request.getBytes());
-            os.flush();
-
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder response = new StringBuilder();
-            while ((bytesRead = is.read(buffer)) != -1) {
-                response.append(new String(buffer, 0, bytesRead));
-            }
-
-            String responseString = response.toString();
-            try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseString);
-                Double wearLevel = (Double) obj.get("wearLevel");
-                return wearLevel;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.out.println(" [!] # Error during reading JSON Response");
-                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-                return -1.0;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println(" [!] # Error during socket communication");
-            // In caso di errore nella comunicazione con il socket, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
-            return -1.0;
-        }
-    }*/
-
 
     public Double getWearLevel(String address) throws ConnectorException, IOException {
         String uri = "coap://" + address + "/sensor/light";

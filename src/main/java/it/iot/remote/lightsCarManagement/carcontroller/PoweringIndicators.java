@@ -9,10 +9,10 @@ import java.util.TimerTask;
 public class PoweringIndicators implements Runnable {
     //Faccio accendere il clacson in maniera temporizzata più mantengo accesi gli abbaglianti
     private final static RemoteCarControllerHandler coapClient = RemoteCarControllerHandler.getInstance();
-    String powerFlag;
+    Integer powerFlag;
     String address;
 
-    public PoweringIndicators(String power, String addr) {
+    public PoweringIndicators(Integer power, String addr) {
         powerFlag = power;
         address = addr;
     }
@@ -22,6 +22,7 @@ public class PoweringIndicators implements Runnable {
         try {
             String lightsStatus = coapClient.getLightsOnOff(address);
             Integer brightsStatus = coapClient.getBrightsOnOff(address);
+            powerFlag = brightsStatus;
 
             if (lightsStatus.equals("ON") && brightsStatus == 0) {
                 // Imposta il timer per accendere e spegnere le frecce e il clacson
