@@ -60,7 +60,8 @@ public class LightStatusHandler {
                         String lightFulminated = (String) genreJsonObject.get("lightFulminated");
                         Integer wearLevel = (Integer) genreJsonObject.get("wearLevel");
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(id, lightFulminated, wearLevel);                        System.out.println("[!] Insert Alert data in DB");
+                        byte[] coapPayload = createCoapPayload(id, lightFulminated, wearLevel);
+                        System.out.println("[!] Insert Alert data in DB");
                         lightsStatus.handleMqttMessage(coapPayload);
 
                     }catch (org.json.simple.parser.ParseException e){
@@ -75,7 +76,7 @@ public class LightStatusHandler {
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-
+                      System.out.println("Delivery Complete!");
                 }
 
             });
