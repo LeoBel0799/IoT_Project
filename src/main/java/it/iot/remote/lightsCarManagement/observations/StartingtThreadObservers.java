@@ -11,11 +11,11 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
 
-public class StartingResources extends CoapResource {
+public class StartingtThreadObservers extends CoapResource {
     private final static RemoteCarControllerHandler handler = RemoteCarControllerHandler.getInstance();
     Observer obs;
 
-    public StartingResources(String res){
+    public StartingtThreadObservers(String res){
         super(res);
     }
 

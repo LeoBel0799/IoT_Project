@@ -1,6 +1,7 @@
 package it.iot.remote;
 
 import it.iot.remote.server.Server;
+import it.iot.remote.user.UserMenu;
 
 
 public class MainClass {
@@ -10,9 +11,12 @@ public class MainClass {
         Thread th = new Thread(server);
         th.start();
 
-        // start thread for user command listener
-        /*UserInputController userInputController = new UserInputController();
-        Thread userInputControllerThread = new Thread(userInputController);
-        userInputControllerThread.start();*/
+        // thread for user menu
+        UserMenu userMenu = new UserMenu();
+        Thread menu = new Thread(userMenu);
+        menu.start();
+
+
+        //thread for operator menu
     }
 }
