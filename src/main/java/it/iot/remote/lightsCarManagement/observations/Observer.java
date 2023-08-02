@@ -7,11 +7,14 @@ import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.util.logging.Logger;
+
 public class Observer {
     private static CoapClient motionApp = null;
     private static CoapClient lightPower = null;
     private static CoapClient brightsPower = null;
     public DBremoteObservers dBremoteObservers;
+    private static final Logger logger = Logger.getLogger(Observer.class.getName());
 
     public void onLightsObserver (String ip){
         motionApp = new CoapClient("coap://[" + ip + "]/sensor/motion");
@@ -26,7 +29,7 @@ public class Observer {
                         }
                     }
                     @Override public void onError() {
-                        System.out.println("[-] LIGHTS observation failed");
+                        logger.severe("[!] LIGHTS observation failed");
                     }
                 }
         );
@@ -47,7 +50,7 @@ public class Observer {
 
                     }
                     @Override public void onError() {
-                        System.out.println("[-] BRIGHTS observation failed");
+                        logger.severe("[!] BRIGHTS observation failed");
                     }
                 }
         );
@@ -55,33 +58,50 @@ public class Observer {
     }
 
     public void indicators(CoapResponse res) throws ParseException {
-        byte[] payload = res.getPayload();
-        JSONParser parser = new JSONParser();
-        JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
-        int brights = data.getInt("brights");
-        // Registra evento
-        dBremoteObservers.insertObserverBright(brights);
+        try{
+            byte[] payload = res.getPayload();
+            JSONParser parser = new JSONParser();
+            JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
+            int brights = data.getInt("brights");
+            // Registra evento
+            dBremoteObservers.insertObserverBright(brights);
+        }catch (ParseException e) {
+            // Sostituisce println
+            logger.severe("Error parsing payload: " + e.getMessage());
+        }
+
     }
 
 
 
     public void horn (CoapResponse res) throws ParseException {
-        byte[] payload = res.getPayload();
-        JSONParser parser = new JSONParser();
-        JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
-        int brights = data.getInt("brights");
-        // Registra evento
-        dBremoteObservers.insertObserverBright(brights);
+        try{
+            byte[] payload = res.getPayload();
+            JSONParser parser = new JSONParser();
+            JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
+            int brights = data.getInt("brights");
+            // Registra evento
+            dBremoteObservers.insertObserverBright(brights);
+        }catch (ParseException e) {
+            // Sostituisce println
+            logger.severe("Error parsing payload: " + e.getMessage());
+        }
+
     }
 
 
     public void lights (CoapResponse res) throws ParseException {
-        byte[] payload = res.getPayload();
-        JSONParser parser = new JSONParser();
-        JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
-        String lightStatus = data.getString("lights");
-        // Registra evento
-        dBremoteObservers.insertObserverLight(lightStatus);
+        try{
+            byte[] payload = res.getPayload();
+            JSONParser parser = new JSONParser();
+            JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
+            String lightStatus = data.getString("lights");
+            // Registra evento
+            dBremoteObservers.insertObserverLight(lightStatus);
+        }catch (ParseException e) {
+            // Sostituisce println
+            logger.severe("Error parsing payload: " + e.getMessage());
+        }
     }
 
         public static void shutdown(){
