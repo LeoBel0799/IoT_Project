@@ -1,18 +1,17 @@
 package it.iot.remote.lightsCarManagement.observations;
-import it.iot.remote.lightsCarManagement.carcontroller.PoweringHorn;
-import it.iot.remote.lightsCarManagement.carcontroller.PoweringIndicators;
-import it.iot.remote.lightsCarManagement.carcontroller.PoweringLights;
+import it.iot.remote.database.DBremoteObservers;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.json.JSONObject;
-import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class Observer {
     private static CoapClient motionApp = null;
     private static CoapClient lightPower = null;
     private static CoapClient brightsPower = null;
+    public DBremoteObservers dBremoteObservers;
 
     public void onLightsObserver (String ip){
         motionApp = new CoapClient("coap://[" + ip + "]/sensor/motion");
@@ -20,7 +19,11 @@ public class Observer {
         motionApp.observe(
                 new CoapHandler() {
                     @Override public void onLoad(CoapResponse response) {
-                        lights(response, ip);
+                        try {
+                            lights(response);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
                     }
                     @Override public void onError() {
                         System.out.println("[-] LIGHTS observation failed");
@@ -35,8 +38,13 @@ public class Observer {
         motionApp.observe(
                 new CoapHandler() {
                     @Override public void onLoad(CoapResponse response) {
-                        indicators(response,ip);
-                        horn(response, ip);
+                        try {
+                            indicators(response);
+                            horn(response);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                     @Override public void onError() {
                         System.out.println("[-] BRIGHTS observation failed");
@@ -46,51 +54,37 @@ public class Observer {
 
     }
 
-    public void indicators (CoapResponse res, String addr){
-        String resp = new String(res.getPayload());
-        JSONObject obj;
-        try {
-            obj = (JSONObject) JSONValue.parseWithException(resp);
-            Integer brights = (Integer) obj.get("brights"); //capire se arriva il valore di brights o il comando
-            //ON-OFF
-            PoweringIndicators l = new PoweringIndicators(brights,addr);
-            Thread threadForIndicators = new Thread(l);
-            threadForIndicators.start();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void horn (CoapResponse res, String addr){
-        String resp = new String(res.getPayload());
-        JSONObject obj;
-        try {
-            obj = (JSONObject) JSONValue.parseWithException(resp);
-            String brights = (String) obj.get("brights");
-            PoweringHorn l = new PoweringHorn(brights,addr);
-            Thread threadForIndicators = new Thread(l);
-            threadForIndicators.start();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+    public void indicators(CoapResponse res) throws ParseException {
+        byte[] payload = res.getPayload();
+        JSONParser parser = new JSONParser();
+        JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
+        int brights = data.getInt("brights");
+        // Registra evento
+        dBremoteObservers.insertObserverBright(brights);
     }
 
 
-    public void lights (CoapResponse res, String addr){
-        String resp = new String(res.getPayload());
-        JSONObject obj;
-        try {
-            obj = (JSONObject) JSONValue.parseWithException(resp);
-            String lights = (String) obj.get("lights");
-            PoweringLights l = new PoweringLights(lights,addr);
-            Thread threadForLight = new Thread(l);
-            threadForLight.start();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+
+    public void horn (CoapResponse res) throws ParseException {
+        byte[] payload = res.getPayload();
+        JSONParser parser = new JSONParser();
+        JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
+        int brights = data.getInt("brights");
+        // Registra evento
+        dBremoteObservers.insertObserverBright(brights);
     }
 
-    public static void shutdown(){
+
+    public void lights (CoapResponse res) throws ParseException {
+        byte[] payload = res.getPayload();
+        JSONParser parser = new JSONParser();
+        JSONObject data = (JSONObject) parser.parse(String.valueOf(payload));
+        String lightStatus = data.getString("lights");
+        // Registra evento
+        dBremoteObservers.insertObserverLight(lightStatus);
+    }
+
+        public static void shutdown(){
         motionApp.shutdown();
         brightsPower.shutdown();
         lightPower.shutdown();

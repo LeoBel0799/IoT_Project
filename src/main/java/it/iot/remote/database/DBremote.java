@@ -47,35 +47,6 @@ public class DBremote {
     }
 
 
-    public static void insertObserverLight(String lightStatus) {
-
-        String insert = "INSERT INTO observerLight (light_status,timestamp) VALUES (?, ?)";
-
-        try (Connection conn = connectDbs()) {
-
-            PreparedStatement stmt = conn.prepareStatement(insert);
-            stmt.setString(1, lightStatus);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void insertObserverBright(int brightStatus) {
-
-        String insert = "INSERT INTO observerLight (brightStatus,timestamp) VALUES (?, ?)";
-
-        try (Connection conn = connectDbs()) {
-
-            PreparedStatement stmt = conn.prepareStatement(insert);
-            stmt.setInt(1, brightStatus);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     public static String getAddressForId(int id) {
         String address = null;
         try (Connection connection = connectDbs()) {
