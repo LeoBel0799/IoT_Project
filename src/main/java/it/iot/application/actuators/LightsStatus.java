@@ -121,7 +121,7 @@ public class LightsStatus {
         String sql = "CREATE TABLE coapalarm " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "wearlevel INTEGER, " +
-                "ALARM VARCHAR(5)" +
+                "ALARM VARCHAR(5)," +
                 "timestamp CURRENT_TIMESTAMP";
         try{
             PreparedStatement stmt = this.connection.prepareStatement(sql);

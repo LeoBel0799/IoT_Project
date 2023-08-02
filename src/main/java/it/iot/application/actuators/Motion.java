@@ -141,10 +141,10 @@ public class Motion implements LightStatusListener {
         String sql = "CREATE TABLE coapmotion " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "lights VARCHAR(5), " +
-                "lightsDegree INTEGER " +
-                "brights INTEGER "+
-                "lightsOnCount INTEGER "+
-                "lightsOffCount INTEGER" +
+                "lightsDegree INTEGER, " +
+                "brights INTEGER, "+
+                "lightsOnCount INTEGER, "+
+                "lightsOffCount INTEGER," +
                 "timestamp CURRENT_TIMESTAMP";
         try{
             PreparedStatement stmt = this.connection.prepareStatement(sql);
