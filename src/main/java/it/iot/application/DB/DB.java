@@ -11,7 +11,7 @@ public class DB {
         System.out.println("Instantiating!");
     }
 
-    public Connection connectDbs() {
+    public Connection connDb() {
         if (connection != null) {
             return connection;
         } else {

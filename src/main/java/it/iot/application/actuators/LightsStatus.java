@@ -12,13 +12,13 @@ import org.json.JSONObject;
 import org.json.simple.JSONValue;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+
+import static it.iot.remote.database.DBremote.connectDbs;
 
 public class LightsStatus {
     private DB db;
@@ -34,7 +34,7 @@ public class LightsStatus {
     public LightsStatus(String sourceAddress, String resource) throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
-        this.connection = this.db.connectDbs();
+        this.connection = this.db.connDb();
         System.out.println("Connected to Collector DB");
         // Initialize LightStatus resource fields
         this.address = sourceAddress;
@@ -82,31 +82,105 @@ public class LightsStatus {
         return wearLevel;
     }
 
-    private void executeQueryLight(Boolean lightFulminated) {
-        try {
-            System.out.println(this.connection);
-            // Prima query per inserire i dati in coapalarm
-            String sql1 = "INSERT INTO `coaplightstatus`(`id`,`lightFulimnated`) VALUES (?,?, ?)";
-            PreparedStatement preparedStatement1 = this.connection.prepareStatement(sql1);
-            preparedStatement1.setInt(1, Integer.parseInt(this.lightId));
-            preparedStatement1.setBoolean(2, (lightFulminated));
-            preparedStatement1.executeUpdate();
+    private void createCoapLightStatusTable() {
+        String sql = "CREATE TABLE coaplightstatus " +
+                " id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                " lightFulminated VARCHAR(10), " +
+                " timestamp CURRENT_TIMESTAMP";
+        try{
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.executeUpdate(sql);
+            System.out.println("[!] CoapLightStatus table created!");
 
-            // Imposta il campo 'alarm' in base al grado di usura
-            boolean alarm = (wearLevel >= MAX_WEAR_LEVEL);
-
-            // Seconda query per inserire i dati in coaplightstatus solo se il grado di usura è massimo
-            if (wearLevel >= MAX_WEAR_LEVEL) {
-                String sql2 = "INSERT INTO `coapalarm` (`id`,`wearLevel`, `ALARM`, `timestamp`) VALUES (?, ?, ?,?)";
-                PreparedStatement preparedStatement2 = this.connection.prepareStatement(sql2);
-                preparedStatement2.setInt(1, Integer.parseInt(this.lightId));
-                preparedStatement2.setInt(2, (int) wearLevel);
-                preparedStatement2.setBoolean(3, alarm); // true indica che l'allarme è scattato, false altrimenti
-                preparedStatement2.setString(4, getFormattedTimestamp());
-                preparedStatement2.executeUpdate();
-            }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private boolean tableCoapLightStatusExists (String table){
+        Connection conn = this.connection;
+        try(conn) {
+            DatabaseMetaData dbMetadata = conn.getMetaData();
+            ResultSet tables = dbMetadata.getTables(null, null, table, null);
+
+            if(tables.next()) {
+                // Tabella esiste
+                return true;
+            } else {
+                // Tabella non esiste
+                return false;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void createCoapAlarmTable() {
+        String sql = "CREATE TABLE coapalarm " +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "wearlevel INTEGER, " +
+                "ALARM VARCHAR(5)" +
+                "timestamp CURRENT_TIMESTAMP";
+        try{
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.executeUpdate(sql);
+            System.out.println("[!] CoapAlarm table created!");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean tableCoapAlarmExists (String table){
+        Connection conn = this.connection;
+        try(conn) {
+            DatabaseMetaData dbMetadata = conn.getMetaData();
+            ResultSet tables = dbMetadata.getTables(null, null, table, null);
+
+            if(tables.next()) {
+                // Tabella esiste
+                return true;
+            } else {
+                // Tabella non esiste
+                return false;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    private void executeQueryLight(Boolean lightFulminated) {
+        Connection conn = this.connection;
+        if (!tableCoapLightStatusExists("coaplightstatus")){
+            createCoapLightStatusTable();
+        }
+        if (!tableCoapAlarmExists("coapalarm")){
+            createCoapAlarmTable();
+        }
+
+        String insert = "INSERT INTO coaplightstatus(lightFulimnated) VALUES (?)";
+        String insert2 = "INSERT INTO coapalarm (wearLevel, ALARM) VALUES (?, ?)";
+        try (conn){
+            PreparedStatement stmt = conn.prepareStatement(insert);
+            stmt.setBoolean(1, lightFulminated);
+            stmt.executeUpdate();
+
+            boolean alarm = (wearLevel >= MAX_WEAR_LEVEL);
+
+            if (wearLevel >= MAX_WEAR_LEVEL){
+                PreparedStatement stmt2 = conn.prepareStatement(insert2);
+                stmt2.setInt(1, (int) wearLevel);
+                stmt2.setBoolean(2, alarm); // true indica che l'allarme è scattato, false altrimenti
+                stmt2.executeUpdate();
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 
@@ -136,12 +210,4 @@ public class LightsStatus {
             request.getOptions().setAccept(MediaTypeRegistry.APPLICATION_JSON);
             client.advanced(request);
         }
-
-    private String getFormattedTimestamp() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        return formatter.format(now);
-    }
-
-
 }

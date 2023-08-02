@@ -1,8 +1,6 @@
 package it.iot.remote.database;
 
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import static it.iot.remote.database.DBremote.connectDbs;
@@ -18,11 +16,10 @@ public class DBremoteObservers {
         if (!DButils.tableLightObserverExsists("LightObserver")){
             DButils.createLightObserverTable();
         }
-        String insert = "INSERT INTO observerLight (lightStatus,timestamp) VALUES (?, ?)";
+        String insert = "INSERT INTO observerLight (lightStatus) VALUES (?)";
         try (Connection conn = connectDbs()) {
             PreparedStatement stmt = conn.prepareStatement(insert);
             stmt.setString(1, lightStatus);
-            stmt.setString(2, getFormattedTimestamp());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -33,12 +30,10 @@ public class DBremoteObservers {
         if (!DButils.tableBrightObserverExsists("BrightObserver")){
             DButils.createBrightObserverTable();
         }
-        String insert = "INSERT INTO observerBright (brightStatus,timestamp) VALUES (?, ?)";
+        String insert = "INSERT INTO observerBright (brightStatus) VALUES (?)";
 
         try (Connection conn = connectDbs()) {
-
             PreparedStatement stmt = conn.prepareStatement(insert);
-            stmt.setString(2, getFormattedTimestamp());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -124,12 +119,4 @@ public class DBremoteObservers {
           // fai qualcosa con questi valori
         }
      */
-
-
-    private static String getFormattedTimestamp() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        return formatter.format(now);
-    }
-
 }

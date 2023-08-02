@@ -43,7 +43,7 @@ public class Motion implements LightStatusListener {
     public Motion(String sourceAddress, String resource) throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
-        this.connection = this.db.connectDbs();
+        this.connection = this.db.connDb();
         System.out.println("Connected to Collector DB");
         this.address = sourceAddress;
         this.resource = resource;
@@ -137,23 +137,61 @@ public class Motion implements LightStatusListener {
         return (numSpegnimenti / (double) (numAccensioni + numSpegnimenti)) * lightIntensity;
     }
 
+    private void createCoapMotionTable() {
+        String sql = "CREATE TABLE coapmotion " +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "lights VARCHAR(5), " +
+                "lightsDegree INTEGER " +
+                "brights INTEGER "+
+                "lightsOnCount INTEGER "+
+                "lightsOffCount INTEGER" +
+                "timestamp CURRENT_TIMESTAMP";
+        try{
+            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            stmt.executeUpdate(sql);
+            System.out.println("[!] Coapmotion table created!");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean tableCoapMotionExists (String table){
+        Connection conn = this.connection;
+        try(conn) {
+            DatabaseMetaData dbMetadata = conn.getMetaData();
+            ResultSet tables = dbMetadata.getTables(null, null, table, null);
+
+            if(tables.next()) {
+                // Tabella esiste
+                return true;
+            } else {
+                // Tabella non esiste
+                return false;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public void executeQuery() {
-        try {
-            System.out.println(this.connection);
-            String sql = "INSERT INTO `coapmotion` (`id`,`lights`,`lightsDegree`,`brights`,`lightsOnCount`,`lightsOffCount`,`timestamp`) VALUES (?,?, ?, ?, ?, ?, ?,?)";
-            PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-            preparedStatement.setInt(1, Integer.parseInt(this.lightId));
-            preparedStatement.setInt(2, this.lights.equals("ON") ? 1 : 0);
-            preparedStatement.setInt(3, this.lightsDegree);
-            preparedStatement.setString(4, String.valueOf(this.brights));
-            preparedStatement.setInt(5, this.lightsOnCount);
-            preparedStatement.setInt(6, this.lightsOffCount);
-            preparedStatement.setString(7, getFormattedTimestamp());
-            preparedStatement.executeUpdate();
+        Connection conn = this.connection;
+        if (!tableCoapMotionExists("coapmotion")) {
+            createCoapMotionTable();
+        }
+        String insert = "INSERT INTO coapmotion (lights,lightsDegree,brights,lightsOnCount,lightsOffCount) VALUES (?,?,?,?,?)";
+        try (conn) {
+            PreparedStatement stmt = conn.prepareStatement(insert);
+            stmt.setInt(1, this.lights.equals("ON") ? 1 : 0);
+            stmt.setInt(2, this.lightsDegree);
+            stmt.setString(3, String.valueOf(this.brights));
+            stmt.setInt(4, this.lightsOnCount);
+            stmt.setInt(5, this.lightsOffCount);
+            stmt.executeUpdate();
 
             // Show data log
             String selectQuery = "SELECT * FROM `coapmotion`";
-            Statement stmt = this.connection.createStatement();
             ResultSet resultSet = stmt.executeQuery(selectQuery);
 
             ResultSetMetaData metaData = resultSet.getMetaData();
@@ -177,13 +215,6 @@ public class Motion implements LightStatusListener {
         }
     }
 
-
-
-    private String getFormattedTimestamp() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        return formatter.format(now);
-    }
 
     private void startObserving() throws ConnectorException, IOException {
         Logging.setLevel(Level.WARNING);
