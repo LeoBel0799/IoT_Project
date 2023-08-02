@@ -13,12 +13,8 @@ import org.json.simple.JSONValue;
 
 import java.io.IOException;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-
-import static it.iot.remote.database.DBremote.connectDbs;
 
 public class LightsStatus {
     private DB db;
@@ -26,10 +22,8 @@ public class LightsStatus {
     private static final double MAX_WEAR_LEVEL = 5.0;
     private String address;
     private String resource;
-    private String lightId;
     private Boolean lightFulminated; // Stato delle luci, true se sono fulminate, false altrimenti
     private double wearLevel;
-    private Handler Logging;
 
     public LightsStatus(String sourceAddress, String resource) throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
@@ -51,15 +45,12 @@ public class LightsStatus {
         if (payload != null && payload.length > 0) {
             String payloadStr = new String(payload);
             JSONObject jsonPayload = (JSONObject) JSONValue.parse(payloadStr);
-            String id = (String)jsonPayload.get("id");
             Boolean lightFulminated = (Boolean) jsonPayload.get("lightFulminated");
             String wearLevel = (String)jsonPayload.get("wearLevel");
             System.out.println("Detection value node:");
-            System.out.println("id: " + id);
             System.out.println("lightFulminated: " + lightFulminated);
             System.out.println("wearLevel: " + wearLevel);
 
-            this.lightId = id;
             this.lightFulminated = lightFulminated;
             this.wearLevel = Double.parseDouble(wearLevel);
 
@@ -187,7 +178,6 @@ public class LightsStatus {
 
 
     private void startObserving() throws ConnectorException, IOException {
-            Logging.setLevel(Level.WARNING);
             CoapClient client = new CoapClient(this.address + "/" + this.resource);
             client.observe(new CoapHandler() {
                 @Override

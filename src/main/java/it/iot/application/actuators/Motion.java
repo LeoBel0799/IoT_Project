@@ -61,17 +61,14 @@ public class Motion implements LightStatusListener {
             System.out.println(payloadStr);
 
             Map<String, String> nodeData = parseJson(payloadStr);
-            String id = nodeData.get("id");
             String lights = nodeData.get("lights");
             String lightsDegree = nodeData.get("lightsDegree");
             String brights = nodeData.get("brights");
             System.out.println("Detection value node:");
-            System.out.println("id: " + id);
             System.out.println("lights: " + lights);
             System.out.println("lightsDegree: " + lightsDegree);
             System.out.println("brights: " + brights);
 
-            this.lightId = id.split(" ")[0];
             this.lights = lights.split(" ")[0];
             this.lightsDegree = Integer.parseInt(String.valueOf(lightsDegree));
             this.brights = Integer.parseInt(String.valueOf(Integer.parseInt(brights.split(" ")[0])));

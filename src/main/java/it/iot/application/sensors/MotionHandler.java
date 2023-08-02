@@ -54,13 +54,12 @@ public class MotionHandler {
                     JSONObject genreJsonObject;
                     try {
                         genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
-                        Integer id = (Integer) genreJsonObject.get("id");
                         String lights = (String) genreJsonObject.get("lights");
                         int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
                         int brights = Integer.parseInt((String) genreJsonObject.get("brights"));
 
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(id,lights, lightsDegree,brights);
+                        byte[] coapPayload = createCoapPayload(lights, lightsDegree,brights);
 
                         // Chiamare il metodo handleMqttMessage della classe it.iot.collectors.Motion
                         motion.handleMqttMessage(coapPayload);
@@ -80,9 +79,8 @@ public class MotionHandler {
         }
     }
 
-    private byte[] createCoapPayload(Integer id, String lights, int lightsDegree, int brights) {
+    private byte[] createCoapPayload(String lights, int lightsDegree, int brights) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id",id);
         jsonObject.put("lights", lights);
         jsonObject.put("lightsDegree", lightsDegree);
         jsonObject.put("brights", brights);

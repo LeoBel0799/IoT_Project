@@ -55,11 +55,10 @@ public class LightStatusHandler {
                     JSONObject genreJsonObject;
                     try {
                         genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
-                        String id = (String) genreJsonObject.get("id");
                         String lightFulminated = (String) genreJsonObject.get("lightFulminated");
                         Integer wearLevel = (Integer) genreJsonObject.get("wearLevel");
                         // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(id, lightFulminated, wearLevel);
+                        byte[] coapPayload = createCoapPayload(lightFulminated, wearLevel);
                         System.out.println("[!] Insert Alert data in DB");
                         lightsStatus.handleMqttMessage(coapPayload);
 
@@ -100,9 +99,8 @@ public class LightStatusHandler {
         }
     }
 
-    private byte[] createCoapPayload(String id, String lightsDegree, int wearLevel) {
+    private byte[] createCoapPayload(String lightsDegree, int wearLevel) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id", id);
         jsonObject.put("lightFulminated", lightsDegree);
         jsonObject.put("wearLevel", wearLevel);
 
