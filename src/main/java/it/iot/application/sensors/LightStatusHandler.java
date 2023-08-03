@@ -5,6 +5,7 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.*;
 import org.json.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,29 +48,14 @@ public class LightStatusHandler {
                 }
 
                 @Override
-                public void messageArrived(String topic, MqttMessage mqttMessage){
-                    System.out.println("[!] Receiving Alert");
-                    String msg = new String(mqttMessage.getPayload());
-                    System.out.println(" ---  " + msg);
+                public void messageArrived(String topic, MqttMessage msg) throws Exception {
 
-                    JSONObject genreJsonObject;
-                    try {
-                        genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
-                        String lightFulminated = (String) genreJsonObject.get("lightFulminated");
-                        Integer wearLevel = (Integer) genreJsonObject.get("wearLevel");
-                        // Crea il payload CoAP utilizzando il metodo createCoapPayload
-                        byte[] coapPayload = createCoapPayload(lightFulminated, wearLevel);
-                        System.out.println("[!] Insert Alert data in DB");
-                        lightsStatus.handleMqttMessage(coapPayload);
+                    double wearLevel = extractWearLevel(msg); // estrai wearLevel dal payload MQTT
 
-                    }catch (org.json.simple.parser.ParseException e){
-                        e.printStackTrace();
-                        throw new RuntimeException(e);
-                    } catch (ConnectorException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    byte[] payload = createCoapPayload(wearLevel);
+
+                    lightsStatus.handleMqttMessage(payload);
+
                 }
 
                 @Override
@@ -83,25 +69,41 @@ public class LightStatusHandler {
         }
     }
 
-    public void publishWearLevel(double wearLevel) {
+    public void publishWearLevel(double calculatedWearLevel) {
         // Crea il payload JSON per il messaggio MQTT contenente il valore di wearLevel
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("wearLevel", String.valueOf(wearLevel));
-
-        // Converti l'oggetto JSON in una stringa e pubblica il messaggio MQTT
-        String payload = jsonObject.toString();
-        MqttMessage mqttMessage = new MqttMessage(payload.getBytes());
+        byte[] payload = createCoapPayload(calculatedWearLevel);
+        MqttMessage mqttMessage = new MqttMessage(payload);
+        mqttMessage.setRetained(true);
+        String topic = "light";
+        // Publish messaggio
         try {
-            mqttClient.publish(lightTopic, mqttMessage);
-            System.out.println("Sent wearLevel to LightStatusHandler MQTT Broker: " + payload);
+            mqttClient.publish(topic, mqttMessage);
+            System.out.println("Pubblicato aggiornamento wearLevel su MQTT!");
+
         } catch (MqttException e) {
-            e.printStackTrace();
+            System.err.println("Errore pubblicazione MQTT: " + e.getMessage());
         }
     }
 
-    private byte[] createCoapPayload(String lightsDegree, int wearLevel) {
+    private double extractWearLevel(MqttMessage msg) throws Exception {
+
+        String payload = new String(msg.getPayload());
+        JSONParser parser = new JSONParser();
+        JSONObject json = (JSONObject) parser.parse(payload);
+
+
+        // Estrai il campo wearLevel
+        if(json.has("wearLevel")) {
+            return json.getDouble("wearLevel");
+        } else {
+            // Gestisci errore
+            throw new Exception("Campo wearLevel non presente nel payload!");
+        }
+
+    }
+
+    private byte[] createCoapPayload(double wearLevel) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("lightFulminated", lightsDegree);
         jsonObject.put("wearLevel", wearLevel);
 
         String payloadStr = jsonObject.toString();

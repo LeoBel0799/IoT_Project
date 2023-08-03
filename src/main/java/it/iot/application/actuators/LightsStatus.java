@@ -45,13 +45,10 @@ public class LightsStatus {
         if (payload != null && payload.length > 0) {
             String payloadStr = new String(payload);
             JSONObject jsonPayload = (JSONObject) JSONValue.parse(payloadStr);
-            Boolean lightFulminated = (Boolean) jsonPayload.get("lightFulminated");
             String wearLevel = (String)jsonPayload.get("wearLevel");
             System.out.println("Detection value node:");
-            System.out.println("lightFulminated: " + lightFulminated);
             System.out.println("wearLevel: " + wearLevel);
 
-            this.lightFulminated = lightFulminated;
             this.wearLevel = Double.parseDouble(wearLevel);
 
             String wearLevelStr = (String) jsonPayload.get("wearLevel");
@@ -146,6 +143,7 @@ public class LightsStatus {
 
 
     private void executeQueryLight(Boolean lightFulminated) {
+        boolean alarm;
         Connection conn = this.connection;
         if (!tableCoapLightStatusExists("coaplightstatus")){
             createCoapLightStatusTable();
@@ -161,14 +159,18 @@ public class LightsStatus {
             stmt.setBoolean(1, lightFulminated);
             stmt.executeUpdate();
 
-            boolean alarm = (wearLevel >= MAX_WEAR_LEVEL);
 
-            if (wearLevel >= MAX_WEAR_LEVEL){
-                PreparedStatement stmt2 = conn.prepareStatement(insert2);
-                stmt2.setInt(1, (int) wearLevel);
-                stmt2.setBoolean(2, alarm); // true indica che l'allarme è scattato, false altrimenti
-                stmt2.executeUpdate();
+
+            PreparedStatement stmt2 = conn.prepareStatement(insert2);
+            stmt2.setInt(1, (int) this.wearLevel);
+            if (this.wearLevel>=MAX_WEAR_LEVEL){
+                    alarm = true;
+            }else{
+                    alarm = false;
             }
+            stmt2.setBoolean(2, alarm); // true indica che l'allarme è scattato, false altrimenti
+            stmt2.executeUpdate();
+
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();

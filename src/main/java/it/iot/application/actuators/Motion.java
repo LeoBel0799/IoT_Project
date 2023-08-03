@@ -1,6 +1,7 @@
 package it.iot.application.actuators;
 
 import it.iot.application.DB.DB;
+import it.iot.application.sensors.LightStatusHandler;
 import it.iot.application.utils.LightStatusListener;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
@@ -38,6 +39,7 @@ public class Motion implements LightStatusListener {
     public MqttClient lightMqttClient; // Nuovo campo per il riferimento al client MQTT di Light
     private Handler Logging;
     private LightStatusListener lightStatusListener;
+    LightStatusHandler lightStatusHandler;
 
 
     public Motion(String sourceAddress, String resource) throws ConnectorException, IOException {
@@ -75,19 +77,19 @@ public class Motion implements LightStatusListener {
 
             // if lights on, execute a query for lights degree
             // Aggiornare i contatori di accensioni e spegnimenti delle luci
-            if (this.lights.equals("T")) {
+            if (this.lights.equals("ON")) {
                 // Incrementa il contatore di accensioni delle luci
-                lightsOnCount++;
+                this.lightsOnCount++;
             } else {
                 // Incrementa il contatore di spegnimenti delle luci
-                lightsOffCount++;
+                this.lightsOffCount++;
             }
             this.executeQuery();
             // Chiamare il metodo di callback per passare i valori aggiornati alla classe it.iot.handlers.MotionHandler
-            if (lightStatusListener != null) {
-                lightStatusListener.onLightsStatusUpdated(lightsOnCount, lightsOffCount);
+            if (this.lightStatusListener != null) {
+                this.lightStatusListener.onLightsStatusUpdated(this.lightsOnCount, this.lightsOffCount);
             }
-            double calculatedWearLevel = calculateWearLevel(lightsOnCount, lightsOffCount, 20); // 20 è un valore di esempio per l'intensità della luce
+            double calculatedWearLevel = calculateWearLevel(this.lightsOnCount, this.lightsOffCount, 20); // 20 è un valore di esempio per l'intensità della luce
 
             // Invia il valore di "wearLevel" al broker MQTT di Light come messaggio
             String lightTopic = "coap/sensor/light";
@@ -95,6 +97,7 @@ public class Motion implements LightStatusListener {
             MqttMessage mqttMessage = new MqttMessage(wearLevelMessage.getBytes());
             try {
                 this.lightMqttClient.publish(lightTopic, mqttMessage);
+                lightStatusHandler.publishWearLevel(calculatedWearLevel);
                 System.out.println("Sent wearLevel to Light MQTT Broker: " + wearLevelMessage);
             } catch (MqttException e) {
                 e.printStackTrace();
@@ -110,12 +113,16 @@ public class Motion implements LightStatusListener {
         try {
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(json);
-            String id = (String) jsonObject.get("id");
+            String idsensors = (String) jsonObject.get("id");
             String lights = (String) jsonObject.get("lights");
             String lightsDegree = (String) jsonObject.get("lightsDegree");
-            data.put("id", id);
+            String brights = (String) jsonObject.get("brights");
+
+            data.put("idsensor", idsensors);
             data.put("lights", lights);
             data.put("lightsDegree", lightsDegree);
+            data.put("brights", brights);
+
         } catch (org.json.simple.parser.ParseException e) {
             e.printStackTrace();
         }
