@@ -59,8 +59,7 @@ static int blen;
 #include "httpd-simple.h"
 
 /*---------------------------------------------------------------------------*/
-static void
-ipaddr_add(const uip_ipaddr_t *addr)
+static void ipaddr_add(const uip_ipaddr_t *addr)
 {
     uint16_t a;
     int i, f;
@@ -81,8 +80,7 @@ ipaddr_add(const uip_ipaddr_t *addr)
     }
 }
 /*---------------------------------------------------------------------------*/
-static
-PT_THREAD(generate_routes(struct httpd_state *s))
+static PT_THREAD(generate_routes(struct httpd_state *s))
 {
     static uip_ds6_nbr_t *nbr;
 
@@ -170,8 +168,7 @@ PROCESS_THREAD(webserver_nogui_process, ev, data)
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
-httpd_simple_script_t
-httpd_simple_get_script(const char *name)
+httpd_simple_script_t httpd_simple_get_script(const char *name)
 {
     return generate_routes;
 }

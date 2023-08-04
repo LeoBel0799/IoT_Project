@@ -10,8 +10,7 @@
 #include "dev/button-hal.h"
 #include "dev/leds.h"
 #include "os/sys/log.h"
-#include "mqtt-client.h"
-
+#include "mqtt.h"
 #include <string.h>
 #include <strings.h>
 #include <time.h>
@@ -54,9 +53,11 @@ AUTOSTART_PROCESSES(&mqtt_client_process);
 
 
 // Periodic timer to check the state of the MQTT client
-#define STATE_MACHINE_PERIODIC  CLOCK_SECOND * 30
+#define STATE_MACHINE_PERIODIC  (CLOCK_SECOND >> 1)
+#define PUBLISH_PERIOD  (CLOCK_SECOND * 30)
 static struct etimer periodic_timer;
-#define PERIODIC_TIMER 30
+//Define a new timer to handle the phase of publish
+static struct etimer pub_timer;
 
 /*---------------------------------------------------------------------------*/
 /*
@@ -88,6 +89,7 @@ static char client_id[BUFFER_SIZE];
 static char pub_topic_light_id [BUFFER_SIZE];                //Id per identificare Luce
 static char pub_topic_lights_degree[BUFFER_SIZE]; //Posizione, anabbagliante, abbagliante
 static char pub_topic_lights[BUFFER_SIZE]; //Acceso, Spento
+
 
 
 /*---------------------------------------------------------------------------*/
@@ -169,11 +171,9 @@ void set_valueLights(char msg[]){
 
     LOG_INFO("[+] Lights Status detected %d\n", lightsValue);
 
-    sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d,\"area_id\":%d,\"node_id\":%d}",
+    sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d}",
             "Is On?",
-            lightsValue,
-            AREA_ID,
-            NODE_ID
+            lightsValue
     );
 
     LOG_INFO(" >  %s\n", msg);
@@ -184,11 +184,9 @@ void set_valueLightDegree(char msg[]){
 
     LOG_INFO("[+] Lights Degree detected %d\n", lightsValue);
 
-    sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d,\"area_id\":%d,\"node_id\":%d}",
+    sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d}",
             "Lights Degree is ?",
-            lightsDegree,
-            AREA_ID,
-            NODE_ID
+            lightsDegree
     );
 
     LOG_INFO(" >  %s\n", msg);
@@ -199,11 +197,9 @@ void set_LightId(char msg[]){
 
     LOG_INFO("[+] LightsId detected %d\n", lightsValue);
 
-    sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d,\"area_id\":%d,\"node_id\":%d}",
+    sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d}",
             "Lights Degree is ?",
-            lightsDegree,
-            AREA_ID,
-            NODE_ID
+            lightsDegree
     );
 
     LOG_INFO(" >  %s\n", msg);
@@ -233,8 +229,10 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
   // Initialize periodic timer to check the status
   etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
+  etimer_set(&pub_timer, 1 * CLOCK_SECOND);
 
-  /* Main loop */
+
+/* Main loop */
   while(1) {
 
     PROCESS_YIELD();
@@ -258,7 +256,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
         if(state==STATE_CONNECTING){
             LOG_INFO("Not connected yet\n");
         }
-        if(state == STATE_CONNECTED ){
+        if(state == STATE_CONNECTED  && etimer_expired(&pub_timer)){
             // Pub temperature
             LOG_INFO("[!] Public message on LightId \n");
 
@@ -290,6 +288,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
             mqtt_publish(&conn, NULL, pub_topic_lights, (uint8_t *)app_buffer,
                          strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+
+            etimer_set(&pub_timer, PUBLISH_PERIOD);
         }
         else if ( state == STATE_DISCONNECTED ){
             LOG_ERR("Disconnected from MQTT broker\n");
@@ -297,10 +297,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             state = STATE_INIT;
         }
         etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
-
-
     }
-
   }
   PROCESS_END();
 }
