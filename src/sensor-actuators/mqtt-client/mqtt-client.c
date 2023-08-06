@@ -107,12 +107,13 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
     printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic,
            topic_len, chunk_len);
 
+    /* NON DOVREBBE SERVIRE
     if(strcmp(topic, "actuator") == 0) {
         printf("Received Actuator command\n");
         printf("%s\n", chunk);
         // Do something :)
         return;
-    }
+    }*/
 }
 /*---------------------------------------------------------------------------*/
 
@@ -120,7 +121,7 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
 static void mqtt_event(struct mqtt_connection* m, mqtt_event_t event, void* data){
     switch(event){
         case MQTT_EVENT_CONNECTED:
-            printf("The application has a MQTT connection\n");
+            printf("MQTT connection\n");
             state = STATE_CONNECTED;
             break;
         case MQTT_EVENT_DISCONNECTED:
@@ -182,7 +183,7 @@ void set_valueLightDegree(char msg[]){
     int lightsDegree =(rand()%3);  //0 posizione, 1 anabbagliante, 2 abbagliante
 
 
-    LOG_INFO("[+] Lights Degree detected %d\n", lightsValue);
+    LOG_INFO("[+] Lights Degree detected %d\n", lightsDegree);
 
     sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d}",
             "Lights Degree is ?",
@@ -195,11 +196,11 @@ void set_LightId(char msg[]){
     int lightId =(rand()%100);
 
 
-    LOG_INFO("[+] LightsId detected %d\n", lightsValue);
+    LOG_INFO("[+] LightsId detected %d\n", lightId);
 
     sprintf(msg,"{\"cmd\":\"%s\",\"value\":%d}",
             "Lights Degree is ?",
-            lightsDegree
+            lightId
     );
 
     LOG_INFO(" >  %s\n", msg);
@@ -236,7 +237,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
   while(1) {
 
     PROCESS_YIELD();
-    if((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || ev == PROCESS_EVENT_POLL){
+    if((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) ||
+      ev == PROCESS_EVENT_POLL || ( ev == PROCESS_EVENT_TIMER && data == &pub_timer) ){
         if(state==STATE_INIT){
             if(have_connectivity()==true){
                 printf("Connectivity verified!\n");
@@ -252,13 +254,13 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
                          MQTT_CLEAN_SESSION_ON);
             state = STATE_CONNECTING;
             printf("Connecting!\n");
-        }
+        }/*
         if(state==STATE_CONNECTING){
             LOG_INFO("Not connected yet\n");
-        }
+        }*/
         if(state == STATE_CONNECTED  && etimer_expired(&pub_timer)){
-            // Pub temperature
-            LOG_INFO("[!] Public message on LightId \n");
+
+            LOG_INFO("Public message on LightId \n");
 
             sprintf(pub_topic_light_id, "%s", "LightId");
             cleanArray(app_buffer, sizeof(app_buffer));
@@ -267,8 +269,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             mqtt_publish(&conn, NULL, pub_topic_light_id, (uint8_t *)app_buffer,
             strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
 
-             // Pub humidity
-            LOG_INFO("[!] Public message on Light Degree \n");
+
+            LOG_INFO("Public message on Light Degree \n");
 
             sprintf(pub_topic_lights_degree, "%s", "lightDegree");
 
@@ -278,10 +280,10 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             mqtt_publish(&conn, NULL, pub_topic_lights_degree, (uint8_t *)app_buffer,
             strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
 
-            // Pub presence
+
             LOG_INFO("[!] Public message on light is On \n");
 
-            sprintf(pub_topic_lights, "%s", "presence");
+            sprintf(pub_topic_lights, "%s", "Light is On");
 
             cleanArray(app_buffer, sizeof(app_buffer));
             set_valueLights(app_buffer);

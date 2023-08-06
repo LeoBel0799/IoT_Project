@@ -32,8 +32,8 @@ public class Motion implements LightStatusListener {
     private String resource;
     private String lightId;
     private String lights; //luci accese o spente
-    private int lightsDegree; //1 posizione - 2 anabbaglianti
-    private int brights; //abbaglianti accesi o spenti - 1 accesi - 0 spenti
+    private int lightsDegree; //1 posizione - 2 anabbaglianti -3 abbaglianti
+   // private int brights; //abbaglianti accesi o spenti - 1 accesi - 0 spenti
     private int lightsOnCount; // Contatore per il numero di volte in cui le luci sono state accese
     private int lightsOffCount; // Contatore per il numero di volte in cui le luci sono state spente
     public MqttClient lightMqttClient; // Nuovo campo per il riferimento al client MQTT di Light
