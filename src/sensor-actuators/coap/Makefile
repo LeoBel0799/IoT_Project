@@ -1,10 +1,13 @@
 CONTIKI_PROJECT = coap_node
 all: $(CONTIKI_PROJECT)
 
-# Include CoAP resources /// Attualmente non serve
-#MODULES_REL += ./resources
+# Do not try to build on Sky because of code size limitation
+PLATFORMS_EXCLUDE = sky z1
 
-CONTIKI = ../../..
+# Include CoAP resources
+MODULES_REL += ./resources
+
+CONTIKI = ../../../..
 
 # Include the CoAP implementation
 include $(CONTIKI)/Makefile.dir-variables
