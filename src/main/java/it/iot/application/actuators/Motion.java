@@ -30,7 +30,6 @@ public class Motion implements LightStatusListener {
     private Connection connection;
     private String address;
     private String resource;
-    private String lightId;
     private String lights; //luci accese o spente
     private int lightsDegree; //1 posizione - 2 anabbaglianti -3 abbaglianti
    // private int brights; //abbaglianti accesi o spenti - 1 accesi - 0 spenti
@@ -40,6 +39,7 @@ public class Motion implements LightStatusListener {
     private Handler Logging;
     private LightStatusListener lightStatusListener;
     LightStatusHandler lightStatusHandler;
+    private int brights;
 
 
     public Motion(String sourceAddress, String resource) throws ConnectorException, IOException {
@@ -92,7 +92,7 @@ public class Motion implements LightStatusListener {
             double calculatedWearLevel = calculateWearLevel(this.lightsOnCount, this.lightsOffCount, 20); // 20 è un valore di esempio per l'intensità della luce
 
             // Invia il valore di "wearLevel" al broker MQTT di Light come messaggio
-            String lightTopic = "coap/sensor/light";
+            String lightTopic = "light";
             String wearLevelMessage = "{ \"wearLevel\": " + calculatedWearLevel + " }";
             MqttMessage mqttMessage = new MqttMessage(wearLevelMessage.getBytes());
             try {
@@ -113,12 +113,10 @@ public class Motion implements LightStatusListener {
         try {
             JSONParser parser = new JSONParser();
             JSONObject jsonObject = (JSONObject) parser.parse(json);
-            String idsensors = (String) jsonObject.get("id");
             String lights = (String) jsonObject.get("lights");
             String lightsDegree = (String) jsonObject.get("lightsDegree");
             String brights = (String) jsonObject.get("brights");
 
-            data.put("idsensor", idsensors);
             data.put("lights", lights);
             data.put("lightsDegree", lightsDegree);
             data.put("brights", brights);
