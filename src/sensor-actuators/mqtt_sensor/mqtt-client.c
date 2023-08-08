@@ -100,7 +100,7 @@ static struct mqtt_connection conn;
 #define BUFFER_SIZE 256
 static char client_id[BUFFER_SIZE];
 static char pub_topic[BUFFER_SIZE];
-
+static char pub_topic_light[BUFFER_SIZE];
 
 // Periodic timer to check the state of the MQTT client
 
@@ -187,15 +187,11 @@ static bool have_connectivity() {
 //IL VALORE DA MOTION, E ADESSO VIENE RIPUBBLICATO SULLO STESSO TOPIC
 //"LIGHT" A DISPOSIZIONE DEL SOECONDO COAP OVVERO LIGHT.
 
-void messageReceived(char* topic, byte* payload) {
+/*void messageReceived(char* topic, char* payload) {
 
         if(strcmp(topic, "light") == 0) {
-
-            // Converte payload in stringa
-            char* payload_str = (char*) payload;
-
             // Analizza JSON
-            JSON_Value* root = json_parse_string(payload_str);
+            JSON_Value* root = json_parse_string(payload);
 
             // Estrai wearLevel
             double wearLevel = json_object_get_number(root, "wearLevel");
@@ -207,8 +203,27 @@ void messageReceived(char* topic, byte* payload) {
             // Pubblica il nuovo payload sul topic "light"
             mqtt_publish(&client, "light", new_payload, strlen(new_payload), QoS, RETAIN);
         }
-}
+}*/
+/*
+void messageReceived(MQTTClient *conn, MessageData* data){
+      char* topic = data->message->topic;
+      json_error_t error;
+       if (strcmp(topic, "light") == 0){
+         char* payload = data->message->payload;
+         int payloadLen = data->message->payloadlen;
+         //mqtt_message data structure
+         //static struct mqtt_message *msg_ptr = 0;
+         //msg_pointer->topic - Contains the topic
+         //msg_pointer->payload_chunk // Contains the payload
+         //msg_pointer->payload_lenght // Contains the payload lenghts
+         json_t* root = json_loadb(payload, payloadLen, 0, &error);
+         json_t* wearLevel = json_object_get(root, "wearLevel");
+         double wear = json_number_value(wearLevel);
+         MQTTClient_publish(conn, "light", strlen(wear), wear);
 
+       }
+}
+*/
 
 /*-------------------------------------------*/
 
@@ -222,6 +237,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
     printf("MQTT Client Process\n");
 
     // Initialize the ClientID as MAC address
+    static mqtt_status_t status;
     snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",
     linkaddr_node_addr.u8[0], linkaddr_node_addr.u8[1],
     linkaddr_node_addr.u8[2], linkaddr_node_addr.u8[5],
@@ -240,14 +256,14 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
         PROCESS_YIELD();
 
         if((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || ev == PROCESS_EVENT_POLL){
-            if(state==STATE_INIT && state_light==STATE_INIT){
+            if(state==STATE_INIT){
                 if(have_connectivity()==true){
-                printf("Connectivity verified for both states!\n");
+                printf("Connectivity verified for both state!\n");
                 state = STATE_NET_OK;
-                state_light = STATE_NET_OK
+                state_light = STATE_NET_OK;
                 }
             }
-            if(state == STATE_NET_OK && state_light== STATE_NET_OK){
+            if(state == STATE_NET_OK){
             // Connect to MQTT server
             LOG_INFO("Connecting to MQTT server\n");
             memcpy(broker_address, broker_ip, strlen(broker_ip));
@@ -261,26 +277,26 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             if(state==STATE_CONNECTED && state_light==STATE_CONNECTED){
                 //Topic subscribe
                 strcpy(pub_topic,"motion");
-                state = mqtt_subscribe(&conn, NULL, pub_topic,MQTT_QOS_LEVEL_0);
+                status = mqtt_subscribe(&conn, NULL, pub_topic,MQTT_QOS_LEVEL_0);
                 printf("Subscribing to motion\n");
                 strcpy(pub_topic_light,"light");
-                state_light = mqtt_subscribe(&conn, pub_topic_light, QoS);
+                state_light = mqtt_subscribe(&conn,NULL, pub_topic_light, MQTT_QOS_LEVEL_0);
                 printf("Subscribing to light\n");
-                mqtt_set_message_callback(messageReceived);
+                //mqtt_set_message_callback(messageReceived);
 
-                if (state == MQTT_STATUS_OUT_QUEUE_FULL){
+                if (status == MQTT_STATUS_OUT_QUEUE_FULL){
                     LOG_ERR("Tried to subscribe but commmand queue was full!\n");
                     PROCESS_EXIT();
                 }
                 state = STATE_SUBSCRIBED;
-                state_light =  STATE_SUBSCRIBED
+
             }
 
-            if(state==STATE_CONNECTING && state_light==STATE_CONNECTING ){
+            if(state==STATE_CONNECTING){
                 LOG_INFO("Not connected yet\n");
             }
 
-            if (state == STATE_SUBSCRIBED && state_light = STATE_SUBSCRIBED) {
+            if (state == STATE_SUBSCRIBED) {
                 sprintf(pub_topic,"%s", "motion");
                 //light on-off
                 light = (rand()%2);
@@ -296,9 +312,11 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
                 // Costruzione del payload JSON
                 char payload[BUFFER_SIZE];
                 snprintf(payload, BUFFER_SIZE, "{\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}", light_str, light_degree, brights);
-
                 //Publish message
-                mqtt_publish(&conn, NULL, "motion", (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+                mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+
+
+
 
                 }else if ( state == STATE_DISCONNECTED ){
                     LOG_ERR("Disconnected from MQTT broker\n");

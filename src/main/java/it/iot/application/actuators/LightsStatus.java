@@ -13,8 +13,7 @@ import org.json.simple.JSONValue;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.logging.Handler;
-import java.util.logging.Level;
+
 
 public class LightsStatus {
     private DB db;
