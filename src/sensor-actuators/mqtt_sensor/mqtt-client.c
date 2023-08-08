@@ -207,7 +207,6 @@ void messageReceived(char* topic, byte* payload) {
         }
 }
 
-mqtt_set_message_callback(messageReceived);
 
 /*-------------------------------------------*/
 
@@ -239,7 +238,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
         PROCESS_YIELD();
 
         if((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || ev == PROCESS_EVENT_POLL){
-            if(state==STATE_INIT || state_light==STATE_INIT){
+            if(state==STATE_INIT && state_light==STATE_INIT){
                 if(have_connectivity()==true){
                 printf("Connectivity verified for both states!\n");
                 state = STATE_NET_OK;
