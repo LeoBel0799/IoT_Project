@@ -14,6 +14,7 @@
 #include "os/sys/log.h"
 #include "mqtt-client.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <strings.h>
 #include <time.h>
@@ -42,6 +43,7 @@ static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
 /*---------------------------------------------------------------------------*/
 /* Various states */
 static uint8_t state;
+static uint8_t state_light;
 
 #define STATE_INIT            0 // Initial state
 #define STATE_NET_OK          1 // Network is initialized
@@ -65,11 +67,11 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 static int light = 0;
 static int light_degree = 0;
 static int brights = 0;
-
+/*
 char topics[2][BUFFER_SIZE];
 strcpy(topics[0], "motion");
 strcpy(topics[1], "light");
-
+*/
 
 // Periodic timer to check the state of the MQTT client
 #define STATE_MACHINE_PERIODIC  CLOCK_SECOND * 30
@@ -281,19 +283,19 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             if (state == STATE_SUBSCRIBED && state_light = STATE_SUBSCRIBED) {
                 sprintf(pub_topic,"%s", "motion");
                 //light on-off
-                light = (rand()%1);
+                light = (rand()%2);
                 char* light_str = light ? "ON" : "OFF";
                 //light Degree
-                light_degree = (rand()%2);
+                light_degree = (rand()%3);
                 //brights 0-1
-                bright = (rand()%1);
+                brights = (rand()%2);
                 sprintf(app_buffer,"{\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}",light_str,
-                        light_degree,bright);
+                        light_degree,brights);
                 printf("Message: %s\n",app_buffer);
 
                 // Costruzione del payload JSON
                 char payload[BUFFER_SIZE];
-                snprintf(payload, BUFFER_SIZE, "{\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}", light_str, light_degree, bright);
+                snprintf(payload, BUFFER_SIZE, "{\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}", light_str, light_degree, brights);
 
                 //Publish message
                 mqtt_publish(&conn, NULL, "motion", (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
