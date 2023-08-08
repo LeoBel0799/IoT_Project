@@ -300,8 +300,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
                 sprintf(pub_topic,"%s", "motion");
                 //light on-off
                 light = (rand()%2);
-                char* light_str = light ? "ON" : "OFF";
-                //light Degree
+                char* light_str = light ? "ON" : "OFF"; //0 acceso                //light Degree
                 light_degree = (rand()%3);
                 //brights 0-1
                 brights = (rand()%2);
