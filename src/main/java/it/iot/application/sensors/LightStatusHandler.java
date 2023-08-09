@@ -10,7 +10,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public class LightStatusHandler {
+public class LightStatusHandler implements MqttCallback{
 
     String lightBrokerUrl;
     String lightClientId;
@@ -19,55 +19,44 @@ public class LightStatusHandler {
     LightsStatus lightsStatus;
     private double wearLevel;
 
-    public LightStatusHandler(String brokerUrl, String clientId, String topic) {
+    public LightStatusHandler(String brokerUrl, String clientId, String topic) throws MqttException {
         this.lightBrokerUrl = brokerUrl;
         this.lightClientId = clientId;
         this.lightTopic = topic;
+        mqttClient = new MqttClient(lightBrokerUrl, lightClientId);
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setCleanSession(true);
+        mqttClient.connect(options);
+
+        // Subscribe to the MQTT topic
+        mqttClient.subscribe(lightTopic);
+        System.out.println("Connected to MQTT Broker. Subscribed to topic: " + lightTopic);
     }
 
     public void setWearLevel(double wearLevel) {
         this.wearLevel = wearLevel;
     }
 
-    public void connect() {
-        try {
-            mqttClient = new MqttClient(lightBrokerUrl, lightClientId);
-            MqttConnectOptions options = new MqttConnectOptions();
-            options.setCleanSession(true);
-            mqttClient.connect(options);
 
-            // Subscribe to the MQTT topic
-            mqttClient.subscribe(lightTopic);
-            System.out.println("Connected to MQTT Broker. Subscribed to topic: " + lightTopic);
-
-            // Set up message callback
-            mqttClient.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable throwable) {
-                    System.err.println("Connection to MQTT Broker lost!");
-                }
-
-                @Override
-                public void messageArrived(String topic, MqttMessage msg) throws Exception {
-
-                    double wearLevel = extractWearLevel(msg); // estrai wearLevel dal payload MQTT
-
-                    byte[] payload = createCoapPayload(wearLevel);
-
-                    lightsStatus.handleMqttMessage(payload);
-
-                }
-
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-                      System.out.println("Delivery Complete!");
-                }
-
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+    public void connectionLost(Throwable throwable) {
+        System.err.println("Connection to MQTT Broker lost!");
     }
+
+
+    public void messageArrived(String topic, MqttMessage msg) throws Exception {
+
+        double wearLevel = extractWearLevel(msg); // estrai wearLevel dal payload MQTT
+
+        byte[] payload = createCoapPayload(wearLevel);
+
+        lightsStatus.handleMqttMessage(payload);
+
+    }
+
+    public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+        System.out.println("Delivery Complete!");
+    }
+
 
     public void publishWearLevel(double calculatedWearLevel) {
         // Crea il payload JSON per il messaggio MQTT contenente il valore di wearLevel

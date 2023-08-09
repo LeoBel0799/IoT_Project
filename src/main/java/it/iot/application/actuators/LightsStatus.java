@@ -24,14 +24,11 @@ public class LightsStatus {
     private Boolean lightFulminated; // Stato delle luci, true se sono fulminate, false altrimenti
     private double wearLevel;
 
-    public LightsStatus(String sourceAddress, String resource) throws ConnectorException, IOException {
+    public LightsStatus() throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connDb();
         System.out.println("Connected to Collector DB");
-        // Initialize LightStatus resource fields
-        this.address = sourceAddress;
-        this.resource = resource;
         // Start observing for updates
         this.startObserving();
         System.out.println("LightStatus resource initialized");

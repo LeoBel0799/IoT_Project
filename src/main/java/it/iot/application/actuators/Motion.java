@@ -42,13 +42,11 @@ public class Motion implements LightStatusListener {
     private int brights;
 
 
-    public Motion(String sourceAddress, String resource) throws ConnectorException, IOException {
+    public Motion() throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
         this.db = new DB();
         this.connection = this.db.connDb();
         System.out.println("Connected to Collector DB");
-        this.address = sourceAddress;
-        this.resource = resource;
         // Avvia l'osservazione per gli aggiornamenti
         this.startObserving();
         System.out.println("Motion resource initialized");
