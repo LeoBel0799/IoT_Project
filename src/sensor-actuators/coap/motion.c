@@ -1,147 +1,149 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "contiki.h"
-#include "net/routing/routing.h"
-#include "random.h"
-#include "net/netstack.h"
-#include "net/ipv6/simple-udp.h"
-#include "sys/node-id.h"
-#include "os/dev/button-hal.h"
-#include "os/dev/serial-line.h"
-#include "os/dev/leds.h"
 
+#include "net/ipv6/uip-ds6.h"
+#include "net/ipv6/uiplib.h"
+
+
+#include "sys/ctimer.h"
 #include "coap-engine.h"
 #include "coap-blocking-api.h"
 
-#include "sys/log.h"
 #include "sys/etimer.h"
+#include "dev/leds.h"
+#include "dev/button-hal.h"
 
-#define LOG_MODULE "NODE"
-#define LOG_LEVEL LOG_LEVEL_INFO
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#define UDP_CLIENT_PORT	8765
-#define UDP_SERVER_PORT	5678
+/* Log configuration */
+#include "sys/log.h"
+#define LOG_MODULE "Light-Actuator"
+#define LOG_LEVEL LOG_LEVEL_DBG
 
-#define SERVER_EP "coap://[fd00::1]:5683"
-#define SERVER_REGISTRATION "registration"
+//Resources to expose
+extern coap_resource_t  res_light;
 
+static struct etimer periodic_state_timer;
 
-#define SENSOR_TYPE "motion_sensor"
-#define SIMULATION_INTERVAL 30
-#define TOGGLE_INTERVAL 10
-#define TIMEOUT_INTERVAL 30
+#define STATE_TIMER (CLOCK_SECOND * 10)
 
-static struct etimer register_timer;
-static struct etimer simulation;
-static struct etimer timeout_timer;
+#define SERVER_IP "coap://[fd00::1]"
+#define ID_PAIR 1
 
+static bool registered = false;
+static bool check = false;
 
-bool registered = false;
-bool pressed = false;
+static char msg_size[40];
 
-extern coap_resource_t motion_sensor;
-extern coap_resource_t alert_actuator;
-
-
-
-/*---------------------------------------------------------------------------*/
-PROCESS(coap_client, "CoAP Client");
-PROCESS(sensor_node, "Sensor node");
-AUTOSTART_PROCESSES(&coap_client, &sensor_node);
-
-/*---------------------------------------------------------------------------*/
-void response_handler(coap_message_t *response){
-    const uint8_t *chunk;
-    if(response == NULL) {
-        puts("Request timed out");
-        return;
+static bool have_conn(void)
+{
+    //Ritorna true solo se il nodo corrente ha un Public IP
+    if(uip_ds6_get_global(ADDR_PREFERRED) == NULL || uip_ds6_defrt_choose() == NULL)
+    {
+        return false;
     }
-    int len = coap_get_payload(response, &chunk);
-    printf("|%.*s\n", len, (char *)chunk);
+    return true;
 }
 
-/*---------------------------------------------------------------------------*/
-/**
- * Node behave as coap_client in order to register to the rpl_border_router.
- */
+void handler(coap_message_t *response){
+    const uint8_t *chunk;
 
-PROCESS_THREAD(coap_client, ev, data){
+    if(response != NULL){
+        int len = coap_get_payload(response, &chunk);
+        LOG_INFO("APPLICATION RESPONSE: %.*s\n", len, (char*)chunk);
+        if(strcmp((char*)chunk, "OK") == 0)
+        {
+            registered = true;
+            check = true;
+        }
+        else
+        {
+            LOG_DBG("Tyre already in use\n");
+        }
+    }
+    else{
+        LOG_DBG("Error\n");
+    }
+}
+
+// Se mi risponde prima che scada il timer resetto
+void checker(coap_message_t *response){
+    if(response != NULL){
+        check = true;
+    }
+    else
+    {
+        check = false;
+        registered = false;
+        LOG_DBG("Connection lost\n");
+    }
+}
+
+PROCESS(coap_server, "Tyrewarmer actuator");
+AUTOSTART_PROCESSES(&coap_server);
+
+PROCESS_THREAD(coap_server, ev, data)
+{
+    PROCESS_BEGIN();
 
     static coap_endpoint_t server_ep;
     static coap_message_t request[1];
-    uip_ipaddr_t dest_ipaddr;
 
-    PROCESS_BEGIN();
-    coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
-    etimer_set(&register_timer, TOGGLE_INTERVAL * CLOCK_SECOND);
+    coap_activate_resource(&res_tyrewarmer_toggle, "tyrewarmer");
+    leds_on(LEDS_RED);
 
-    while(1) {
+    etimer_set(&periodic_state_timer, STATE_TIMER);
+    coap_endpoint_parse(SERVER_IP, strlen(SERVER_IP), &server_ep);
 
-    printf("Waiting COAP connection..\n");
-    PROCESS_YIELD();
-
-    if((ev == PROCESS_EVENT_TIMER && data == &register_timer) || ev == PROCESS_EVENT_POLL) {
-
-        if(NETSTACK_ROUTING.node_is_reachable() && NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr)){
-            printf("--Registration--\n");
-            coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
-            coap_set_header_uri_path(request, (const char *)&SERVER_REGISTRATION);
-            char msg[300];
-            strcpy( msg, "{\"Resource\":\"motion_resource\"}");
-            printf("MSG registration motion.c : %s\n", msg);
-            coap_set_payload(request, (uint8_t*) msg, strlen(msg));
-            COAP_BLOCKING_REQUEST(&server_ep, request, response_handler);
-            registered = true;
-            break;
+    while(1)
+    {
+        PROCESS_YIELD();
+        // Evento bottone
+        if(ev == button_hal_release_event)
+        {
+            if(isRegistered == 1)
+            {
+                LOG_DBG("Tyrewarmer toggled\n");
+                res_tyrewarmer_toggle.trigger();
+            }
         }
-        else{
-            printf("Not rpl address yet\n");
-        }
-        etimer_reset(&register_timer);
-      }
-    }
+        else if(ev == PROCESS_EVENT_TIMER && data == &periodic_state_timer)
+        {
+        // Registra
+        if(have_conn())
+            {
+            // Invia una richiesta di registrazione BLOCCANTE
+            if(!isRegistered)
+                {
+                int leng = sprintf(msg_size,"type=REG1&tyre=%d", ID_PAIR);
 
-    LOG_INFO("REGISTERED\nStarting motion server\n");
+                coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
+                coap_set_header_uri_path(request, "registrator");
+                coap_set_payload(request, msg_size, leng);
 
-    PROCESS_END();
-}
+                printf("Send a request of registration...\n");
+                COAP_BLOCKING_REQUEST(&server_ep, request, handler);
+            }
+            //Check if is register
+            else
+            {
+                if(check)
+                {
+                    check = false;
 
-PROCESS_THREAD(sensor_node, ev, data){
-
-    button_hal_button_t *btn;
-    PROCESS_BEGIN();
-    coap_activate_resource(&motion_sensor, "motion_resource");
-    coap_activate_resource(&alert_actuator, "alert_actuator");
-    btn = button_hal_get_by_index(0);
-    etimer_set(&simulation, CLOCK_SECOND * SIMULATION_INTERVAL);
-    LOG_INFO("Simulation\n");
-
-    while (1) {
-        PROCESS_WAIT_EVENT();
-        //ogni 30 secondi triggera il controllo e genera random isClosed
-        if (ev == PROCESS_EVENT_TIMER && data == &simulation && !pressed) {
-            printf("Event trigger\n");
-            motion_sensor.trigger();
-            etimer_set(&simulation, CLOCK_SECOND * SIMULATION_INTERVAL);
-        }
-
-        if ((ev == button_hal_press_event)){
-            if (registered){
-                if(!pressed){
-                    printf("Button pressed\n");
-                    btn = (button_hal_button_t *)data;
-                    printf("Release event (%s)\n", BUTTON_HAL_GET_DESCRIPTION(btn));
-                    pressed = true;
-                    etimer_set(&timeout_timer,TIMEOUT_INTERVAL*CLOCK_SECOND);
-                }else{
-                    etimer_stop(&timeout_timer);
-                    printf("Release alarm!\n");
-                    pressed = false;
+                    coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
+                    coap_set_header_uri_path(request, "registrator");
+                    COAP_BLOCKING_REQUEST(&server_ep, request, checker);
                 }
             }
         }
+        else
+            {
+            LOG_DBG("Connecting to Border Router\n");
+            }
+        }
+        etimer_reset(&periodic_state_timer);
     }
     PROCESS_END();
 }
-
