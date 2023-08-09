@@ -16,7 +16,7 @@ public class DB {
             return connection;
         } else {
             try {
-                String url = "jdbc:mysql://localhost/collector";
+                String url = "jdbc:mysql://localhost/collector?serverTimezone=UTC";
                 String user = "root";
                 String password = "PASSWORD";
 
