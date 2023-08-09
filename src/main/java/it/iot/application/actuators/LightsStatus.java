@@ -86,7 +86,7 @@ public class LightsStatus {
 
     private boolean tableCoapLightStatusExists (String table){
         Connection conn = this.connection;
-        try(conn) {
+        try {
             DatabaseMetaData dbMetadata = conn.getMetaData();
             ResultSet tables = dbMetadata.getTables(null, null, table, null);
 
@@ -122,7 +122,7 @@ public class LightsStatus {
 
     private boolean tableCoapAlarmExists (String table){
         Connection conn = this.connection;
-        try(conn) {
+        try{
             DatabaseMetaData dbMetadata = conn.getMetaData();
             ResultSet tables = dbMetadata.getTables(null, null, table, null);
 
@@ -153,7 +153,7 @@ public class LightsStatus {
 
         String insert = "INSERT INTO coaplightstatus(lightFulimnated) VALUES (?)";
         String insert2 = "INSERT INTO coapalarm (wearLevel, ALARM) VALUES (?, ?)";
-        try (conn){
+        try {
             PreparedStatement stmt = conn.prepareStatement(insert);
             stmt.setBoolean(1, lightFulminated);
             stmt.executeUpdate();

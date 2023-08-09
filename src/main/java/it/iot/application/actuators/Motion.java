@@ -160,7 +160,7 @@ public class Motion implements LightStatusListener {
 
     private boolean tableCoapMotionExists (String table){
         Connection conn = this.connection;
-        try(conn) {
+        try {
             DatabaseMetaData dbMetadata = conn.getMetaData();
             ResultSet tables = dbMetadata.getTables(null, null, table, null);
 
@@ -183,7 +183,7 @@ public class Motion implements LightStatusListener {
             createCoapMotionTable();
         }
         String insert = "INSERT INTO coapmotion (lights,lightsDegree,brights,lightsOnCount,lightsOffCount) VALUES (?,?,?,?,?)";
-        try (conn) {
+        try {
             PreparedStatement stmt = conn.prepareStatement(insert);
             stmt.setInt(1, this.lights.equals("ON") ? 1 : 0);
             stmt.setInt(2, this.lightsDegree);
