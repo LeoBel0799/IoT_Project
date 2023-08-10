@@ -10,16 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 public class LightData {
-    private DB db;
-    private Connection connection;
+    DB db = new DB();
     Map<Integer, Integer> lightCounters = new HashMap<>();
 
     public LightData() throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
-        this.db = new DB();
-        this.connection = this.db.connDb();
-        System.out.println("Connected to Collector DB, ready to insert Motion measurements in DB|");
-        ;
+        System.out.println("Connected to Collector DB, ready to insert Motion measurements in DB!");
     }
 
 
@@ -33,7 +29,8 @@ public class LightData {
                 "brights VARCHAR , " +
                 "timestamp CURRENT_TIMESTAMP";
         try {
-            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            Connection conn = db.connDb();
+            PreparedStatement stmt =conn.prepareStatement(sql);
             stmt.executeUpdate(sql);
             System.out.println("[!] Motion table created!");
 
@@ -43,8 +40,8 @@ public class LightData {
     }
 
     private boolean tableMotionExists(String table) {
-        Connection conn = this.connection;
         try {
+            Connection conn = db.connDb();
             DatabaseMetaData dbMetadata = conn.getMetaData();
             ResultSet tables = dbMetadata.getTables(null, null, table, null);
 
@@ -64,7 +61,6 @@ public class LightData {
 
     public void insertMotionData(int id, String lights, int lights_degree, String brights) {
         String insert = "INSERT INTO motion (id,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
-        Connection conn = this.connection;
         if (!tableMotionExists("coapmotion")) {
             createMotionTable();
         }
@@ -73,6 +69,7 @@ public class LightData {
         lightCounters.put(id, count);
 
         try {
+            Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(insert);
             stmt.setInt(1,id);
             stmt.setInt(2,count);
@@ -88,10 +85,10 @@ public class LightData {
     }
 
     public String getLightStatus(int lightId) {
-        Connection conn = this.connection;
         String lightStatus = null;
 
         try {
+            Connection conn = db.connDb();
 
             String sql = "SELECT lights FROM motion WHERE id = ?";
 
@@ -116,7 +113,7 @@ public class LightData {
 
         int counter = 0;
         try {
-            Connection conn = this.connection;
+            Connection conn = db.connDb();
             // Query per ottenere il contatore
             String sql = "SELECT counter FROM motion WHERE id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -142,7 +139,8 @@ public class LightData {
         List<String> rows = new ArrayList<>();
 
         try {
-            Statement stmt = connection.createStatement();
+            Connection conn = db.connDb();
+            Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM motion");
 
             while(rs.next()) {

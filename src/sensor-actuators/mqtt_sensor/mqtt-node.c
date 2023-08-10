@@ -96,11 +96,15 @@ static struct mqtt_connection conn;
  */
 #define BUFFER_SIZE 256
 static char client_id[BUFFER_SIZE];
+static char topic_motion[BUFFER_SIZE];
 
-#define PUB_TOPIC "Motion"
-#define SUB_TOPIC "Light"
+// Periodic timer to publish a message (every 30 sec)
+#define PUB_PERIOD 30 * CLOCK_SECOND
+static struct etimer pub_timer;
 
 
+#define APP_BUFFER_SIZE 512
+static char app_buffer[APP_BUFFER_SIZE];
 /*---------------------------------------------------------------------------*/
 PROCESS(mqtt_client_process,"MQTT Client");
 
@@ -109,12 +113,12 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
                         uint16_t chunk_len) {
     printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic, topic_len, chunk_len);
 
-    if (strcmp(topic, SUB_TOPIC) == 0) {
+ /*   if (strcmp(topic, SUB_TOPIC) == 0) {
         printf("Received Actuator command\n");
         printf("%s\n", chunk);
 
         return;
-    }
+    }*/
 }
 
 /*---------------------------------------------------------------------------*/
@@ -186,6 +190,9 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
 
     // Initialize periodic timer to check the status
     etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
+
+    // Initialize pub timer to publish messages
+     etimer_set(&pub_timer, 1 * CLOCK_SECOND);
     int messageCounter = 0;
 
     /* Main loop */
@@ -213,7 +220,8 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
 
         if(state==STATE_CONNECTED){
         //Topic subscribe
-        status = mqtt_subscribe(&conn, NULL, PUB_TOPIC, MQTT_QOS_LEVEL_0);
+        sprintf(topic_motion,"%s","motion");
+        status = mqtt_subscribe(&conn, NULL, topic_motion, MQTT_QOS_LEVEL_0);
         printf("Subscribing\n");
             if (status == MQTT_STATUS_OUT_QUEUE_FULL){
                 LOG_ERR("Tried to subscribe but commmand queue was full!\n");
@@ -232,12 +240,11 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             light_id = ((messageCounter % 4) + 4) % 4 + 1;
             //light on-off
             light = (rand()%2);
-            char* light_str = light ? "ON" : "OFF"; //0 acceso 1 spento
-            //light Degree
+            char* light_str = light ? "\"ON\"" : "\"OFF\"";             //light Degree
             light_degree = (rand()%3);
             //brights 0-1
             brights = (rand()%2);
-            char* bright_str = brights ? "ON" : "OFF";
+            char* bright_str = brights ? "\"ON\"" : "\"OFF\"";
 
             sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",light_id,light_str,
             light_degree,bright_str);
@@ -245,7 +252,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
 
             printf("Message: %s\n",app_buffer);
             //Publish message
-            mqtt_publish(&conn, NULL, PUB_TOPIC, (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+            mqtt_publish(&conn, NULL, topic_motion, (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
             leds_on(LEDS_GREEN);
             etimer_set(&led_etimer, 2 * CLOCK_SECOND);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&led_etimer));
