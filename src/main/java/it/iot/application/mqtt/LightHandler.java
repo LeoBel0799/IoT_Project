@@ -51,11 +51,6 @@ public class LightHandler implements MqttCallback {
             String lights = (String) genreJsonObject.get("lights");
             int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
             String brights = (String) genreJsonObject.get("brights");
-
-            // Crea il payload CoAP utilizzando il metodo createCoapPayload
-            //byte[] coapPayload = createCoapPayload(lights, lightsDegree,brights);
-            // Chiamare il metodo handleMqttMessage della classe it.iot.collectors.Motion
-            //motion.handleMqttMessage(coapPayload);
             lightData.insertMotionData(id,lights,lightsDegree,brights);
         } catch (ParseException e) {
             e.printStackTrace();

@@ -4,7 +4,9 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NodeData  {
@@ -74,5 +76,25 @@ public class NodeData  {
             }
         }
 
+    public List<String> selectAllNode() {
 
+        List<String> rows = new ArrayList<>();
+
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM node");
+
+            while(rs.next()) {
+                String row = " ";
+                row += "IdLights: " + rs.getInt("idLights");
+                row += ", IPv6: " + rs.getString("ipv6");
+                rows.add(row);
+            }
+        } catch(SQLException e) {
+            // gestisci eccezione
+        }
+
+        return rows;
+
+    }
 }

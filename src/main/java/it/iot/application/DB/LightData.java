@@ -4,7 +4,9 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LightData {
@@ -25,11 +27,10 @@ public class LightData {
         String sql = "CREATE TABLE motion " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "idlights INTEGER,"+
+                "counter INTEGER," +
                 "lights VARCHAR(5), " +
                 "lightsDegree INTEGER, " +
-                "brights INTEGER, " +
-                "lightsOnCount INTEGER, " +
-                "lightsOffCount INTEGER," +
+                "brights VARCHAR , " +
                 "timestamp CURRENT_TIMESTAMP";
         try {
             PreparedStatement stmt = this.connection.prepareStatement(sql);
@@ -62,7 +63,7 @@ public class LightData {
     }
 
     public void insertMotionData(int id, String lights, int lights_degree, String brights) {
-        String insert = "INSERT INTO coapmotion (id,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
+        String insert = "INSERT INTO motion (id,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
         Connection conn = this.connection;
         if (!tableMotionExists("coapmotion")) {
             createMotionTable();
@@ -89,7 +90,7 @@ public class LightData {
 
         try {
 
-            String sql = "SELECT lights FROM coapmotion WHERE id = ?";
+            String sql = "SELECT lights FROM motion WHERE id = ?";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, lightId);
@@ -114,7 +115,7 @@ public class LightData {
         try {
             Connection conn = this.connection;
             // Query per ottenere il contatore
-            String sql = "SELECT counter FROM coapmotion WHERE id = ?";
+            String sql = "SELECT counter FROM motion WHERE id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, lightId);
 
@@ -130,6 +131,31 @@ public class LightData {
         }
 
         return counter;
+
+    }
+
+    public List<String> selectAllMotion() {
+
+        List<String> rows = new ArrayList<>();
+
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM motion");
+
+            while(rs.next()) {
+                String row = " ";
+                row += "IdLights: " + rs.getInt("idlights");
+                row += ", Counter: " + rs.getString("counter");
+                row += ", Lights: " + rs.getString("lights");
+                row += ", LightsDegree: " + rs.getInt("lightsDegree");
+                row += ", Brights: " + rs.getString("brights");
+                rows.add(row);
+            }
+        } catch(SQLException e) {
+            // gestisci eccezione
+        }
+
+        return rows;
 
     }
 }

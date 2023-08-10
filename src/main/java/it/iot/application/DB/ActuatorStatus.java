@@ -4,6 +4,8 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ActuatorStatus {
     private DB db;
@@ -74,6 +76,31 @@ public class ActuatorStatus {
         }catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<String> selectAllActuatorStatus() {
+
+        List<String> rows = new ArrayList<>();
+
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM actuator");
+
+            while(rs.next()) {
+                String row = " ";
+                row += "IdActuator: " + rs.getInt("idlights");
+                row += ", Lights: " + rs.getString("light");
+                row += ", Brights: " + rs.getString("bright");
+                row += ", Wear Level: " + rs.getInt("wearLevel");
+                row += ", Fulminated: " + rs.getString("fulminated");
+                rows.add(row);
+            }
+        } catch(SQLException e) {
+            // gestisci eccezione
+        }
+
+        return rows;
+
     }
 
 }

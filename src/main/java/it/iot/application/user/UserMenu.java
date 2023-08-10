@@ -1,15 +1,25 @@
 package it.iot.application.user;
 
+import it.iot.application.DB.ActuatorStatus;
+import it.iot.application.DB.LightData;
+import it.iot.application.DB.NodeData;
 import it.iot.application.controller.PoweringBrights;
 import it.iot.application.controller.PoweringLights;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class UserMenu implements Runnable {
         final int OPTION_TURN_ON_LIGHT = 2;
         final int OPTION_TURN_ON_BRIGHT = 3;
+        final int SHOW_MOTION = 4;
+        final int SHOW_NODES = 5;
+        final int SHOW_ACTUATORS = 6;
         private Scanner input;
         String ip = "127.0.0.1:5683";
+        LightData lightData;
+        NodeData nodeData;
+        ActuatorStatus actuatorStatus;
 
         public UserMenu() {
             Scanner input = new Scanner(System.in);
@@ -29,6 +39,9 @@ public class UserMenu implements Runnable {
                 System.out.println("(1) Exit controller (Press 0 to Exit)");
                 System.out.println("(2) Turn Lights On");
                 System.out.println("(3) Turn Brights On");
+                System.out.println("(4) View Node records");
+                System.out.println("(5) View Actuator records");
+                System.out.println("(6) View Light status records");
 
                 int choice = input.nextInt();
                 switch (choice) {
@@ -57,6 +70,26 @@ public class UserMenu implements Runnable {
                         }
                         break;
 
+                    case SHOW_MOTION:
+                        List<String> motions = lightData.selectAllMotion();
+                        for(String row : motions) {
+                            System.out.println(row);
+                        }
+                        break;
+
+                    case SHOW_ACTUATORS:
+                        List<String> actuators = actuatorStatus.selectAllActuatorStatus();
+                        for (String row: actuators){
+                            System.out.println(row);
+                        }
+                        break;
+
+                    case SHOW_NODES:
+                        List<String> nodes = nodeData.selectAllNode();
+                        for (String row: nodes){
+                            System.out.println(row);
+                        }
+                        break;
 
                     case 1:
                         shouldExit = true;
@@ -65,6 +98,7 @@ public class UserMenu implements Runnable {
 
                     default:
                         System.out.println("Invalid option");
+                        input.nextLine();//svoto buffer
                 }
             }
         }
