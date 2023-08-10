@@ -185,6 +185,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
 
     // Initialize periodic timer to check the status
     etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
+    int messageCounter = 0;
 
     /* Main loop */
     while(1) {
@@ -223,8 +224,11 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
         if(state==STATE_CONNECTING){
             LOG_INFO("Not connected yet\n");
         }
-
+        int light_id;
         if (state == STATE_SUBSCRIBED) {
+            LOG_INFO("[!] Public message on topic Motion \n");
+            //questo per avere id_ciclico
+            lightId = messageCounter % 4 + 1;
             //light on-off
             light = (rand()%2);
             char* light_str = light ? "ON" : "OFF"; //0 acceso 1 spento
@@ -232,13 +236,18 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             light_degree = (rand()%3);
             //brights 0-1
             brights = (rand()%2);
-            sprintf(app_buffer,"{\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}",light_str,
+
+            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}",id,light_str,
             light_degree,brights);
+            messageCounter++;
 
             printf("Message: %s\n",app_buffer);
             //Publish message
             mqtt_publish(&conn, NULL, PUB_TOPIC, (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
-
+            eds_on(LEDS_GREEN);
+            etimer_set(&led_etimer, 2 * CLOCK_SECOND);
+            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&led_etimer));
+            leds_off(LEDS_GREEN);
         }
         else if ( state == STATE_DISCONNECTED ){
                LOG_ERR("Disconnected from MQTT broker\n");
