@@ -68,6 +68,7 @@ public class LightData {
         if (!tableMotionExists("coapmotion")) {
             createMotionTable();
         }
+        System.out.println("[!] Receiving light data");
         int count = lightCounters.getOrDefault(id, 0) + 1;
         lightCounters.put(id, count);
 
@@ -78,7 +79,9 @@ public class LightData {
             stmt.setString(3, lights);
             stmt.setInt(4, lights_degree);
             stmt.setString(5, brights);
+            System.out.println("[!] Insert light data in DB");
             stmt.executeUpdate();
+
         }catch (SQLException e) {
             e.printStackTrace();
         }

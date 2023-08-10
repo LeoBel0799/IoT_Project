@@ -25,6 +25,7 @@
 #else
 #define LOG_LEVEL LOG_LEVEL_DBG
 #endif
+static struct etimer led_etimer;
 
 /*---------------------------------------------------------------------------*/
 /* MQTT broker address. */
@@ -171,7 +172,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
     PROCESS_BEGIN();
 
     printf("MQTT Client Process\n");
-
+    leds_init();
     // Initialize the ClientID as MAC address
     snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",
     linkaddr_node_addr.u8[0], linkaddr_node_addr.u8[1],
@@ -228,7 +229,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
         if (state == STATE_SUBSCRIBED) {
             LOG_INFO("[!] Public message on topic Motion \n");
             //questo per avere id_ciclico
-            lightId = messageCounter % 4 + 1;
+            light_id = ((messageCounter % 4) + 4) % 4 + 1;
             //light on-off
             light = (rand()%2);
             char* light_str = light ? "ON" : "OFF"; //0 acceso 1 spento
@@ -238,14 +239,14 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             brights = (rand()%2);
             char* bright_str = brights ? "ON" : "OFF";
 
-            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",lightId,light_str,
+            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",light_id,light_str,
             light_degree,bright_str);
             messageCounter++;
 
             printf("Message: %s\n",app_buffer);
             //Publish message
             mqtt_publish(&conn, NULL, PUB_TOPIC, (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
-            eds_on(LEDS_GREEN);
+            leds_on(LEDS_GREEN);
             etimer_set(&led_etimer, 2 * CLOCK_SECOND);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&led_etimer));
             leds_off(LEDS_GREEN);

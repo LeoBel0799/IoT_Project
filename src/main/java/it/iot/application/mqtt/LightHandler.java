@@ -51,6 +51,7 @@ public class LightHandler implements MqttCallback {
             String lights = (String) genreJsonObject.get("lights");
             int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
             String brights = (String) genreJsonObject.get("brights");
+            System.out.println("[!] Taking data...");
             lightData.insertMotionData(id,lights,lightsDegree,brights);
         } catch (ParseException e) {
             e.printStackTrace();
