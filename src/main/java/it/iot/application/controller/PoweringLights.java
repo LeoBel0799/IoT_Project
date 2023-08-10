@@ -1,5 +1,6 @@
 package it.iot.application.controller;
 
+import it.iot.application.DB.ActuatorStatus;
 import it.iot.application.DB.LightData;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
@@ -8,7 +9,7 @@ import java.io.IOException;
 public class PoweringLights implements Runnable {
 
     private static LightBrightStatus coapClient = null;
-
+    ActuatorStatus actuatorStatus;
     static {
         try {
             coapClient = new LightBrightStatus();
@@ -52,5 +53,20 @@ public class PoweringLights implements Runnable {
             System.out.println("[!] Sending PUT request (OFF) to Lights");
             coapClient.putLightsOn(address, res);
         }
+        try {
+            String newStatus = LightBrightStatus.getInstance().getLightsOnOff(address);
+            actuatorStatus.insertActuatorData(
+                    light,
+                    newStatus,
+                    null,
+                    wearLevelreceived,
+                    fulminated
+                        );
+        } catch (ConnectorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
