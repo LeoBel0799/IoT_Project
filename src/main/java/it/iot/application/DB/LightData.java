@@ -61,7 +61,7 @@ public class LightData {
         }
     }
 
-    public void insertMotionData(int id, String lights, int lights_degree, int brights) {
+    public void insertMotionData(int id, String lights, int lights_degree, String brights) {
         String insert = "INSERT INTO coapmotion (id,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
         Connection conn = this.connection;
         if (!tableMotionExists("coapmotion")) {
@@ -76,7 +76,7 @@ public class LightData {
             stmt.setInt(2,count);
             stmt.setString(3, lights);
             stmt.setInt(4, lights_degree);
-            stmt.setInt(5, brights);
+            stmt.setString(5, brights);
             stmt.executeUpdate();
         }catch (SQLException e) {
             e.printStackTrace();

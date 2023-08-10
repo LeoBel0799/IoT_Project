@@ -236,9 +236,10 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             light_degree = (rand()%3);
             //brights 0-1
             brights = (rand()%2);
+            char* bright_str = brights ? "ON" : "OFF";
 
-            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%d}",id,light_str,
-            light_degree,brights);
+            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",id,light_str,
+            light_degree,bright_str);
             messageCounter++;
 
             printf("Message: %s\n",app_buffer);

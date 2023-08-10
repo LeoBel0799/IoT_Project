@@ -50,7 +50,7 @@ public class LightHandler implements MqttCallback {
             int id = genreJsonObject.getInt("id");
             String lights = (String) genreJsonObject.get("lights");
             int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
-            int brights = Integer.parseInt((String) genreJsonObject.get("brights"));
+            String brights = (String) genreJsonObject.get("brights");
 
             // Crea il payload CoAP utilizzando il metodo createCoapPayload
             //byte[] coapPayload = createCoapPayload(lights, lightsDegree,brights);
