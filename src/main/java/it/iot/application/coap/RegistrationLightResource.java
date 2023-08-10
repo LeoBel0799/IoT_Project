@@ -3,6 +3,8 @@ package it.iot.application.coap;
 
 import it.iot.application.DB.NodeData;
 import it.iot.application.controller.LightBrightStatus;
+import it.iot.application.controller.PoweringBrights;
+import it.iot.application.controller.PoweringLights;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Response;
@@ -53,8 +55,21 @@ public class RegistrationLightResource extends CoapResource {
             response.setPayload(res);
             exchange.respond(response);
             System.out.println(" >  " + res);
+
+            int lightId = id; // ipotizzo che l'id sia l'id della light
+            PoweringLights poweringLights = new PoweringLights(lightId, ipv6);
+            Thread threadLights = new Thread(poweringLights);
+            threadLights.start();
+
+            // Creazione e avvio thread PoweringBrights
+            PoweringBrights poweringBrights = new PoweringBrights(lightId, ipv6);
+            Thread threadBrights = new Thread(poweringBrights);
+            threadBrights.start();
         } catch (ParseException e) {
             System.out.println("! ERROR during parsing");
         }
+
+
+
     }
 }
