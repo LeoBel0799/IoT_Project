@@ -27,7 +27,7 @@ public class LightBrightStatus {
 
 
     public String getLightsOnOff(String ip) throws ConnectorException, IOException {
-        String uri = "coap://" + ip + "/sensor/motion";
+        String uri = "coap://" + ip + "/acuator/lights";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
         if (coapResponse != null && coapResponse.isSuccess()) {
