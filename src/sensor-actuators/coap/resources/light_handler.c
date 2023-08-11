@@ -6,7 +6,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "light-controller"
+#define LOG_MODULE "light controller"
 #define LOG_LEVEL LOG_LEVEL_APP
 
 extern uint8_t led;
@@ -14,7 +14,7 @@ extern uint8_t led;
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
 RESOURCE(res_light_controller,
-         "title=\"Light Switch\";rt=\"Control\"",
+         "title=\"light controller\";rt=\"Controller\"",
          NULL,
          NULL,
          light_put_handler,
