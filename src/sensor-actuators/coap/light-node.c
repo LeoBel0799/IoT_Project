@@ -19,7 +19,7 @@
 #define REGISTRATION_TRY_INTERVAL 1
 #define SIMULATION_INTERVAL 1
 //#define SENSOR_TYPE "{\"deviceType\": \"light\", \"sensorId\": -1}"
-
+uint16_t node_id = (rand()% 4) + 4) % 4 + 1;
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "light"
@@ -89,11 +89,13 @@ PROCESS_THREAD(light_server, ev, data){
 
 	while(!registered) {
 		LOG_INFO("Sending registration message\n");
+		char payload[50];
+        sprintf(payload, "{\"id\": %d}", node_id);
 		coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 		// Prepare the message
 		coap_init_message(&request, COAP_TYPE_CON, COAP_POST, 0);
 		coap_set_header_uri_path(&request, service_url);
-		coap_set_payload(&request, (uint8_t *)SENSOR_TYPE, sizeof(SENSOR_TYPE) - 1);
+		coap_set_payload(&request, payload, strlen(payload);
 
 		COAP_BLOCKING_REQUEST(&server_ep, &request, client_chunk_handler);
 
