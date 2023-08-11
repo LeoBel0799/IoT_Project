@@ -45,19 +45,20 @@ public class LightHandler implements MqttCallback {
         String msg = new String(mqttMessage.getPayload());
         System.out.println(msg);
 
-        JSONObject genreJsonObject;
+        JSONObject json;
         try {
-            genreJsonObject = (JSONObject) JSONValue.parseWithException(msg);
-            int id = genreJsonObject.getInt("id");
-            String lights = (String) genreJsonObject.get("lights");
-            int lightsDegree = Integer.parseInt((String) genreJsonObject.get("lightsDegree"));
-            String brights = (String) genreJsonObject.get("brights");
+            json = (JSONObject) JSONValue.parseWithException(msg);
+            int id = (int) json.get("id");
+            String lights = (String) json.get("lights");
+            int lightsDegree = (int) json.get("lightsDegree");
+            String brights = (String) json.get("brights");
             System.out.println("[!] Taking data...");
             lightData.insertMotionData(id,lights,lightsDegree,brights);
         } catch (ParseException e) {
             System.err.println("Error parsing JSON: " + e.getMessage());
             e.printStackTrace(); // Stampa la traccia dell'errore per il debug
         }
+        mqttClient.setCallback(this);
     }
 
     @Override
