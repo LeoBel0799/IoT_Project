@@ -68,6 +68,7 @@ static char broker_address[CONFIG_IP_ADDR_STR_LEN];
 static int light = 0;
 static int light_degree = 0;
 static int brights = 0;
+static int lightId = 0;
 
 
 // Periodic timer to check the state of the MQTT client
@@ -202,20 +203,20 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
     if((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || ev == PROCESS_EVENT_POLL){
         if(state==STATE_INIT){
             if(have_connectivity()==true){
-            printf("Connectivity verified!\n");
-            state = STATE_NET_OK;
+                printf("Connectivity verified!\n");
+                state = STATE_NET_OK;
             }
         }
 
         if(state == STATE_NET_OK){
-        // Connect to MQTT server
-        LOG_INFO("Connecting to MQTT server\n");
-        memcpy(broker_address, broker_ip, strlen(broker_ip));
+            // Connect to MQTT server
+            LOG_INFO("Connecting to MQTT server\n");
+            memcpy(broker_address, broker_ip, strlen(broker_ip));
 
-        mqtt_connect(&conn, broker_address, DEFAULT_BROKER_PORT, (DEFAULT_PUBLISH_INTERVAL * 3)/CLOCK_SECOND, MQTT_CLEAN_SESSION_ON);
+            mqtt_connect(&conn, broker_address, DEFAULT_BROKER_PORT, (DEFAULT_PUBLISH_INTERVAL * 3)/CLOCK_SECOND, MQTT_CLEAN_SESSION_ON);
 
-        state = STATE_CONNECTING;
-        printf("Connecting!\n");
+            state = STATE_CONNECTING;
+            printf("Connecting!\n");
         }
 
         if(state==STATE_CONNECTED){
@@ -233,11 +234,11 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
         if(state==STATE_CONNECTING){
             LOG_INFO("Not connected yet\n");
         }
-        int light_id;
+
         if (state == STATE_SUBSCRIBED) {
             LOG_INFO("[!] Public message on topic Motion \n");
             //questo per avere id_ciclico
-            light_id = ((messageCounter % 4) + 4) % 4 + 1;
+            lightId = ((messageCounter % 4) + 4) % 4 + 1;
             //light on-off
             light = (rand()%2);
             char* light_str = light ? "\"ON\"" : "\"OFF\"";             //light Degree
@@ -246,7 +247,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             brights = (rand()%2);
             char* bright_str = brights ? "\"ON\"" : "\"OFF\"";
 
-            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",light_id,light_str,
+            sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",lightId,light_str,
             light_degree,bright_str);
             messageCounter++;
 
@@ -254,7 +255,7 @@ PROCESS_THREAD(mqtt_client_process,ev, data){
             //Publish message
             mqtt_publish(&conn, NULL, topic_motion, (uint8_t *)app_buffer,strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
             leds_on(LEDS_GREEN);
-            etimer_set(&led_etimer, 2 * CLOCK_SECOND);
+            etimer_set(&led_etimer, 2);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&led_etimer));
             leds_off(LEDS_GREEN);
         }
