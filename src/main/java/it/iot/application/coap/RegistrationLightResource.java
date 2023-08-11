@@ -56,7 +56,7 @@ public class RegistrationLightResource extends CoapResource {
             exchange.respond(response);
             System.out.println(" >  " + res);
 
-            int lightId = id; // ipotizzo che l'id sia l'id della light
+/*            int lightId = id; // ipotizzo che l'id sia l'id della light
             PoweringLights poweringLights = new PoweringLights(lightId, ipv6);
             Thread threadLights = new Thread(poweringLights);
             threadLights.start();
@@ -64,7 +64,7 @@ public class RegistrationLightResource extends CoapResource {
             // Creazione e avvio thread PoweringBrights
             PoweringBrights poweringBrights = new PoweringBrights(lightId, ipv6);
             Thread threadBrights = new Thread(poweringBrights);
-            threadBrights.start();
+            threadBrights.start();*/
         } catch (ParseException e) {
             System.out.println("! ERROR during parsing");
         }

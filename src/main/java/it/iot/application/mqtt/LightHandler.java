@@ -46,11 +46,14 @@ public class LightHandler implements MqttCallback {
             System.out.println("MQTT Reconnecting");
             try {
                 mqttClient.connect();
+                System.out.println("MQTT Reconnetted");
+
             } catch (MqttException e) {
                 e.printStackTrace();
             }
             try {
                 mqttClient.subscribe(topic);
+                System.out.println("Connected to MQTT Broker. Subscribed to topic: " + topic);
             } catch (MqttException e) {
                 e.printStackTrace();
             }
