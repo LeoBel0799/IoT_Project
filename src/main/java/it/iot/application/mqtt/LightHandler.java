@@ -35,7 +35,27 @@ public class LightHandler implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable throwable) {
-        System.err.println("Connection to MQTT Broker lost!");
+        System.out.println("Connection to MQTT Broker lost!");
+        int reconnectTime = 3000;
+        while (!mqttClient.isConnected()) {
+            try {
+                Thread.sleep(reconnectTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("MQTT Reconnecting");
+            try {
+                mqttClient.connect();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+            try {
+                mqttClient.subscribe(topic);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
 
@@ -54,11 +74,13 @@ public class LightHandler implements MqttCallback {
             String brights = (String) json.get("brights");
             System.out.println("[!] Taking data...");
             lightData.insertMotionData(id,lights,lightsDegree,brights);
+
         } catch (ParseException e) {
             System.err.println("Error parsing JSON: " + e.getMessage());
             e.printStackTrace(); // Stampa la traccia dell'errore per il debug
         }
         mqttClient.setCallback(this);
+
     }
 
     @Override
