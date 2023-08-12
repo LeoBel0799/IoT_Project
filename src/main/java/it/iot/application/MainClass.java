@@ -7,12 +7,13 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class MainClass {
-    public static void main(String[] args) throws MqttException, ConnectorException, IOException {
+    public static void main(String[] args) throws MqttException, ConnectorException, IOException, SQLException {
         String topicMotion = "motion";
         String brokerMotion = "tcp://127.0.0.1:1883";
-        String idmotion = "motionHandler";
+        String idmotion = "lightHandler";
         LightHandler motion = new LightHandler(brokerMotion,idmotion,topicMotion);
 
 

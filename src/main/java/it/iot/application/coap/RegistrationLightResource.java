@@ -15,6 +15,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class RegistrationLightResource extends CoapResource {
     NodeData node;
@@ -65,7 +66,7 @@ public class RegistrationLightResource extends CoapResource {
             PoweringBrights poweringBrights = new PoweringBrights(lightId, ipv6);
             Thread threadBrights = new Thread(poweringBrights);
             threadBrights.start();*/
-        } catch (ParseException e) {
+        } catch (ParseException | SQLException e) {
             System.out.println("! ERROR during parsing");
         }
 

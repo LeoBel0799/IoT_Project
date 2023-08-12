@@ -9,63 +9,51 @@ import java.util.List;
 
 public class ActuatorStatus {
     private DB db;
-    private Connection connection;
 
     public ActuatorStatus() throws ConnectorException, IOException {
-        // Inizializza i campi del motore delle risorse
-        this.db = new DB();
-        this.connection = this.db.connDb();
-        System.out.println("Connected to Collector DB, ready to insert Actuator status in DB|");
+        System.out.println("[INFO] - Connected to Collector DB, ready to insert Actuator status in DB|");
     }
 
     private void createActuator() {
-        String sql = "CREATE TABLE actuator " +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "idActuator VARCHAR(5), " +
+        String sql = "CREATE TABLE actuator (" +
+                "id INTEGER AUTOINCREMENT  PRIMARY KEY, " +
+                "idActuator INTEGER, " +
                 "light VARCHAR(10), " +
-                "bright VARCHAR(10)" +
-                "wearLevel INTEGER "+
+                "bright VARCHAR(10)," +
+                "wearLevel INTEGER, "+
                 "fulminated VARCHAR(10)"+
-                "timestamp CURRENT_TIMESTAMP";
+                ");";
         try {
-            PreparedStatement stmt = this.connection.prepareStatement(sql);
+            Connection conn = db.connDb();
+            PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.executeUpdate(sql);
-            System.out.println("[!] Node table created!");
+            System.out.println("[OK] - Actuator table created!");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[FAIL] - Error during creating Actuator Table in DB\n");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
     }
 
-
-    private boolean tableActuatorExists(String table) {
-        Connection conn = this.connection;
-        try {
-            DatabaseMetaData dbMetadata = conn.getMetaData();
-            ResultSet tables = dbMetadata.getTables(null, null, table, null);
-
-            if (tables.next()) {
-                // Tabella esiste
-                return true;
-            } else {
-                // Tabella non esiste
-                return false;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public void insertActuatorData(int idActuator, String light, String bright, Double wearLevel, Boolean fulminated) {
-        String insert = "INSERT INTO actuator (idActuator,light,bright,wearLevel,fulminated) VALUES (?,?,?,?,?)";
-        Connection conn = this.connection;
-        if (!tableActuatorExists("actuator")) {
+    public void creatDelete(String table) throws SQLException {
+        if (!DB.tableExists(table)) {
+            createActuator();
+        }else{
+            DB.dropTable(table);
             createActuator();
         }
+    }
+
+    public void insertActuatorData(int idActuator, String light, String bright, Double wearLevel, Boolean fulminated) throws SQLException {
+        String insert = "INSERT INTO actuator (idActuator,light,bright,wearLevel,fulminated) VALUES (?,?,?,?,?)";
+        if (!db.tableExists("actuator")) {
+            createActuator();
+        }
+        System.out.println("[INFO] - Receiving actuator data");
 
         try {
+            Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(insert);
             stmt.setInt(1,idActuator);
             stmt.setString(2,light);
@@ -73,8 +61,12 @@ public class ActuatorStatus {
             stmt.setDouble(4,wearLevel);
             stmt.setBoolean(5,fulminated);
             stmt.executeUpdate();
+            System.out.println("[OK] - Actuator Data inserted into DB");
+
         }catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[FAIL] - Error during insertion data into Actuator table\n");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
     }
 
@@ -83,12 +75,13 @@ public class ActuatorStatus {
         List<String> rows = new ArrayList<>();
 
         try {
-            Statement stmt = connection.createStatement();
+            Connection conn = db.connDb();
+            Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM actuator");
 
             while(rs.next()) {
                 String row = " ";
-                row += "IdActuator: " + rs.getInt("idlights");
+                row += "IdActuator: " + rs.getInt("idActuator");
                 row += ", Lights: " + rs.getString("light");
                 row += ", Brights: " + rs.getString("bright");
                 row += ", Wear Level: " + rs.getInt("wearLevel");
@@ -96,7 +89,9 @@ public class ActuatorStatus {
                 rows.add(row);
             }
         } catch(SQLException e) {
-            // gestisci eccezione
+            System.err.println("[FAIL] - Error during reading actuator data from DB\n");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
 
         return rows;

@@ -10,77 +10,67 @@ import java.util.List;
 import java.util.Map;
 
 public class LightData {
-    DB db = new DB();
     Map<Integer, Integer> lightCounters = new HashMap<>();
 
     public LightData() throws ConnectorException, IOException {
         // Inizializza i campi del motore delle risorse
-        System.out.println("Connected to Collector DB, ready to insert Motion measurements in DB!");
+        System.out.println("[INFO] - Connected to Collector DB, ready to insert Motion measurements in DB!");
     }
 
 
     private void createMotionTable() {
-        String sql = "CREATE TABLE motion " +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "idlights INTEGER,"+
+        String sql = "CREATE TABLE motion (" +
+                "id INTEGER AUTO_INCREMENT PRIMARY KEY,"+
+                "idlight INTEGER,"+
                 "counter INTEGER," +
                 "lights VARCHAR(5), " +
                 "lightsDegree INTEGER, " +
-                "brights VARCHAR , " +
-                "timestamp CURRENT_TIMESTAMP";
+                "brights VARCHAR(5)"+
+                ");";
         try {
-            Connection conn = db.connDb();
+            Connection conn = DB.connDb();
             PreparedStatement stmt =conn.prepareStatement(sql);
             stmt.executeUpdate(sql);
-            System.out.println("[!] Motion table created!");
+            System.out.println("[OK] - Motion table created!");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[FAIL] - Error during creating Motion Table in DB\n");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
     }
 
-    private boolean tableMotionExists(String table) {
-        try {
-            Connection conn = db.connDb();
-            DatabaseMetaData dbMetadata = conn.getMetaData();
-            ResultSet tables = dbMetadata.getTables(null, null, table, null);
-
-            if (tables.next()) {
-                // Tabella esiste
-                return true;
-            } else {
-                // Tabella non esiste
-                return false;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public void insertMotionData(int id, String lights, int lights_degree, String brights) {
-        String insert = "INSERT INTO motion (id,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
-        if (!tableMotionExists("coapmotion")) {
+    public void creatDelete(String table) throws SQLException {
+        if (!DB.tableExists(table)) {
+            createMotionTable();
+        }else{
+            DB.dropTable(table);
             createMotionTable();
         }
-        System.out.println("[!] Receiving light data");
-        int count = lightCounters.getOrDefault(id, 0) + 1;
-        lightCounters.put(id, count);
+    }
+
+    public void insertMotionData(int idlight, String lights, int lights_degree, String brights) throws SQLException {
+        String insert = "INSERT INTO motion (idlight,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
+
+        System.out.println("[INFO] - Inserting  Light record in DB");
+        int count = lightCounters.getOrDefault(idlight, 0) + 1;
+        lightCounters.put(idlight, count);
 
         try {
-            Connection conn = db.connDb();
+            Connection conn = DB.connDb();
             PreparedStatement stmt = conn.prepareStatement(insert);
-            stmt.setInt(1,id);
+            stmt.setInt(1,idlight);
             stmt.setInt(2,count);
             stmt.setString(3, lights);
             stmt.setInt(4, lights_degree);
             stmt.setString(5, brights);
-            System.out.println("[!] Insert light data in DB");
             stmt.executeUpdate();
+            System.out.println("[OK] - Light Data record inserted into DB");
 
         }catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[FAIL] - Error during insertion data record into Motion table\n");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
     }
 
@@ -88,7 +78,7 @@ public class LightData {
         String lightStatus = null;
 
         try {
-            Connection conn = db.connDb();
+            Connection conn = DB.connDb();
 
             String sql = "SELECT lights FROM motion WHERE id = ?";
 
@@ -102,7 +92,9 @@ public class LightData {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("[FAIL] - Error during reading Light status data from DB");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
 
         return lightStatus;
@@ -113,7 +105,7 @@ public class LightData {
 
         int counter = 0;
         try {
-            Connection conn = db.connDb();
+            Connection conn = DB.connDb();
             // Query per ottenere il contatore
             String sql = "SELECT counter FROM motion WHERE id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -127,7 +119,9 @@ public class LightData {
             }
 
         } catch (SQLException e) {
-            // Gestisci eccezione
+            System.err.println("[FAIL] - Error during Counter reading field from DB");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
 
         return counter;
@@ -139,7 +133,7 @@ public class LightData {
         List<String> rows = new ArrayList<>();
 
         try {
-            Connection conn = db.connDb();
+            Connection conn = DB.connDb();
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM motion");
 
@@ -153,7 +147,9 @@ public class LightData {
                 rows.add(row);
             }
         } catch(SQLException e) {
-            // gestisci eccezione
+            System.err.println("[FAIL] - Error during Light data reading from DB");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
 
         return rows;

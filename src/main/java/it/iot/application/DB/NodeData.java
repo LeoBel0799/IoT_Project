@@ -10,91 +10,87 @@ import java.util.List;
 import java.util.Map;
 
 public class NodeData  {
-        private DB db;
-        private Connection connection;
-        Map<Integer, Integer> lightCounters = new HashMap<>();
 
         public NodeData() throws ConnectorException, IOException {
-            // Inizializza i campi del motore delle risorse
-            this.db = new DB();
-            this.connection = this.db.connDb();
-            System.out.println("Connected to Collector DB, ready to insert Node attribute in DB|");
+            System.out.println("[INFO] - Connected to Collector DB, ready to insert Node attribute in DB|");
             ;
         }
 
 
         private void createNodeTable() {
-            String sql = "CREATE TABLE node " +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "idlights VARCHAR(5), " +
-                    "ipv6 VARCHAR(70), " +
-                    "timestamp CURRENT_TIMESTAMP";
+            String sql = "CREATE TABLE node (" +
+                    "id INTEGER AUTOINCREMENT  PRIMARY KEY, " +
+                    "idlight INTEGER, " +
+                    "ipv6 VARCHAR(70)" +
+                    ");";
             try {
-                PreparedStatement stmt = this.connection.prepareStatement(sql);
+                Connection conn = DB.connDb();
+                PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.executeUpdate(sql);
-                System.out.println("[!] Node table created!");
+                System.out.println("[OK] - Node table created!");
 
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.err.println("[FAIL] - Error during creating nODE Table in DB\n");
+                e.printStackTrace(System.err);
+                e.getMessage();
             }
         }
 
-        private boolean tableNodeExists(String table) {
-            Connection conn = this.connection;
-            try {
-                DatabaseMetaData dbMetadata = conn.getMetaData();
-                ResultSet tables = dbMetadata.getTables(null, null, table, null);
 
-                if (tables.next()) {
-                    // Tabella esiste
-                    return true;
-                } else {
-                    // Tabella non esiste
-                    return false;
-                }
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-
-        public void insertNodeData(int id, String ipv6) {
-            String insert = "INSERT INTO node (idLights,IPv6) VALUES (?,?)";
-            Connection conn = this.connection;
-            if (!tableNodeExists("node")) {
+        public void creatDelete(String table) throws SQLException {
+            if (!DB.tableExists(table)) {
+                createNodeTable();
+            }else{
+                DB.dropTable(table);
                 createNodeTable();
             }
+        }
+        public void insertNodeData(int id, String ipv6) throws SQLException {
+            String insert = "INSERT INTO node (idlight,IPv6) VALUES (?,?)";
+            if (!DB.tableExists("node")) {
+                createNodeTable();
+            }
+            System.out.println(" [INFO] - Receiving node data");
+
 
             try {
+                Connection conn = DB.connDb();
                 PreparedStatement stmt = conn.prepareStatement(insert);
                 stmt.setInt(1,id);
                 stmt.setString(2,ipv6);
                 stmt.executeUpdate();
+                System.out.println("[OK] - Node data inserted into DB");
             }catch (SQLException e) {
-                e.printStackTrace();
+                System.err.println("[FAIL] - Error during insertion data into Node table\n");
+                e.printStackTrace(System.err);
+                e.getMessage();
             }
         }
 
     public List<String> selectAllNode() {
-
         List<String> rows = new ArrayList<>();
 
         try {
-            Statement stmt = connection.createStatement();
+            Connection conn = DB.connDb();
+
+            Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM node");
 
             while(rs.next()) {
                 String row = " ";
-                row += "IdLights: " + rs.getInt("idLights");
+                row += "idLights: " + rs.getInt("idlight");
                 row += ", IPv6: " + rs.getString("ipv6");
                 rows.add(row);
             }
         } catch(SQLException e) {
-            // gestisci eccezione
+            System.err.println("[FAIL] - Error during reading data from Node table\n");
+            e.printStackTrace(System.err);
+            e.getMessage();
         }
 
         return rows;
 
     }
+
+
 }

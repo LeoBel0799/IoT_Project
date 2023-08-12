@@ -4,6 +4,7 @@ import it.iot.application.DB.ActuatorStatus;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class PoweringBrights implements Runnable{
     private static LightBrightStatus coapClient = null;
@@ -65,6 +66,8 @@ public class PoweringBrights implements Runnable{
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
 
     }

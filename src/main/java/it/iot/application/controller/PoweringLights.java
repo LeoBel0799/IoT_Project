@@ -5,6 +5,7 @@ import it.iot.application.DB.LightData;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class PoweringLights implements Runnable {
 
@@ -64,7 +65,7 @@ public class PoweringLights implements Runnable {
                         );
         } catch (ConnectorException e) {
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
 

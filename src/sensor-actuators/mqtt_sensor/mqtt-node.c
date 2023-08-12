@@ -68,7 +68,7 @@ static char pub_topic_light[BUFFER_SIZE];
 static struct etimer periodic_timer;
 
 // Periodic timer to publish a message (every 30 sec)
-#define PUB_PERIOD 30 * CLOCK_SECOND
+#define PUB_PERIOD 45 * CLOCK_SECOND
 static struct etimer pub_timer;
 
 /*---------------------------------------------------------------------------*/
@@ -102,8 +102,8 @@ static void
 pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk,
             uint16_t chunk_len)
 {
-  printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic,
-          topic_len, chunk_len);
+  /*printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic,
+          topic_len, chunk_len);*/
 /*
   if(strcmp(topic, "actuator") == 0) {
     printf("Received Actuator command\n");
@@ -118,13 +118,13 @@ mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data)
 {
   switch(event) {
   case MQTT_EVENT_CONNECTED: {
-    printf("Application has a MQTT connection\n");
+    printf("[OK] - Application has a MQTT connection\n");
 
     state = STATE_CONNECTED;
     break;
   }
   case MQTT_EVENT_DISCONNECTED: {
-    printf("MQTT Disconnect. Reason %u\n", *((mqtt_event_t *)data));
+    printf("[FAIL] - MQTT Disconnect. Reason %u\n", *((mqtt_event_t *)data));
 
     state = STATE_DISCONNECTED;
     process_poll(&mqtt_client_process);
@@ -142,25 +142,25 @@ mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data)
     mqtt_suback_event_t *suback_event = (mqtt_suback_event_t *)data;
 
     if(suback_event->success) {
-      printf("Application is subscribed to topic successfully\n");
+      printf("[OK] - Application is subscribed to topic successfully\n");
     } else {
-      printf("Application failed to subscribe to topic (ret code %x)\n", suback_event->return_code);
+      printf("[FAIL] - Application failed to subscribe to topic (ret code %x)\n", suback_event->return_code);
     }
 #else
-    printf("Application is subscribed to topic successfully\n");
+    printf("[OK] - Application is subscribed to topic successfully\n");
 #endif
     break;
   }
   case MQTT_EVENT_UNSUBACK: {
-    printf("Application is unsubscribed to topic successfully\n");
+    printf("[OK] - Application is unsubscribed to topic successfully\n");
     break;
   }
   case MQTT_EVENT_PUBACK: {
-    printf("Publishing complete.\n");
+    printf("[OK] - Publishing complete.\n");
     break;
   }
   default:
-    printf("Application got a unhandled MQTT event: %i\n", event);
+    printf("[WARN] - Application got a unhandled MQTT event: %i\n", event);
     break;
   }
 }
@@ -179,19 +179,19 @@ have_connectivity(void)
 // Functions to return measurement
 void set_light(char msg[]){
 //Value track from the sensor
-    int lightId = rand()%4 + 1;
+    int lightId = (rand()%4) + 1;
     int light = (rand()%2);
     char* light_str = light ? "\"ON\"" : "\"OFF\"";
     int light_degree = (rand()%3);
     int brights = (rand()%2);
     char* bright_str = brights ? "\"ON\"" : "\"OFF\"";
 
-    LOG_INFO("--Light Status detected--- \n");
+    LOG_INFO("[INFO] - Light detection\n");
 
-    sprintf(app_buffer,"{\"id\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",lightId,light_str,
+    sprintf(app_buffer,"{\"idlight\":%d,\"lights\":%s,\"lightsDegree\":%d,\"brights\":%s}",lightId,light_str,
                 light_degree,bright_str);
 
-    LOG_INFO(" >  %s\n", msg);
+    LOG_INFO("%s\n", msg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -203,7 +203,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
   // Initialize the LED
   leds_init();
 
-  LOG_INFO("[!] Start MQTT node \n");
+  LOG_INFO("[INFO] - Start MQTT node \n");
 
   // Initialize the ClientID as MAC address
   snprintf(client_id, BUFFER_SIZE, "%02x%02x%02x%02x%02x%02x",
@@ -221,7 +221,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
   etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
 
   // Initialize pub timer to publish messages
-  etimer_set(&pub_timer, 1 * CLOCK_SECOND);
+  etimer_set(&pub_timer, PUB_PERIOD);
 
   /* Main loop */
   while(1) {
@@ -238,7 +238,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
         if(state == STATE_NET_OK){
             // Connect to MQTT server
-            LOG_INFO("[!] Connecting \n");
+            LOG_INFO("[INFO] - Connecting \n");
 
             memcpy(broker_address, broker_ip, strlen(broker_ip));
 
@@ -250,8 +250,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
         if(state == STATE_CONNECTED && etimer_expired(&pub_timer)){
 
-            // Pub temperature
-            LOG_INFO("--Public message on topic lights-- \n");
+
+            LOG_INFO("[INFO] - Public message on topic lights-- \n");
 
             sprintf(pub_topic_light, "%s", "motion");
 
@@ -268,7 +268,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
 
         } else if ( state == STATE_DISCONNECTED ){
-            LOG_INFO("--Disconnected form MQTT broker--\n");
+            LOG_INFO("[FAIL] - Disconnected form MQTT broker--\n");
             // Recover from error
         }
 
