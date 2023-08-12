@@ -6,14 +6,14 @@ Fields are:
 - Light Degree a field that does not matter in further manipolation
 - Bright that is a boolean filed ON OFF to indicate if brights are ON OFF.
 
-This field are published every some seconds on topic "Motion". Now, here the first
-java class (LightHandler.java) is linked. His aim is to subscribe itself to topic "Motion"
-and by means of Message Arrived method it has to parse MQTT message and put those field and values in DB calling
-insertMotionData() method in LightDataClass.
+These fields with their data are published every some seconds on topic "Motion". A java class is subscribed to it for taking data for further manipulations. The class is LightHandler
+whose aim is to subscribe itself to topic "Motion"and by means of MessageArrived() method it has to parse MQTT message and put those field and values in DB calling insertMotionData() method in LightDataClass.
+At the beginning MessageArrived() method had to take one message, parsing it and put its field into DB causing a resource conflicts because
+meanwhile other messaging were arriving from MQTT. So from a technical point, implementation was changed. A queue was implemented to store sequentially MQTT messages and
+then this queue is processed by a thread that as a second entity, every 15 second (time is editable), takes the first message in the queue, parsing it and
+put it in DB calling insertMotionData() and so on. Extreme case is taken in consideration with a quantity threshold, if queue reaches this treshold (75% editable) tot
+messages are deleted from queue (older).
 
-**FIRST PROBLEM**: After the mqtt.getPayload() even before parse JSON field BROKER lost connection.
-
-**TODO: FIX PROBLEM**
 
 This is the first app required from specification.
 
