@@ -82,7 +82,6 @@ public class LightHandler implements MqttCallback {
             System.err.println("Error parsing JSON: " + e.getMessage());
             e.printStackTrace(); // Stampa la traccia dell'errore per il debug
         }
-        mqttClient.setCallback(this);
 
     }
 
