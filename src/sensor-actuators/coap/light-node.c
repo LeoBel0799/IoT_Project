@@ -28,7 +28,7 @@
 
 //queste sono le coap resource che in java sono gestite tramite i due thread powering light e powering bright
 extern coap_resource_t res_light_controller;
-extern coap_resource_t res_bright_conroller;
+extern coap_resource_t res_bright_controller;
 
 char *service_url = "/registration";
 static bool registered = false;
@@ -76,7 +76,7 @@ PROCESS_THREAD(light_server, ev, data){
 	PROCESS_PAUSE();
 
 	LOG_INFO("Starting Light CoAP-Server\n");
-	//qui avviene il collegamenti ai due thread, infatti le due stringe actuator/lights
+	//qui avviene il collegamenti ai due thread, infatti le due stringhe actuator/lights
 	//e actuator brights sono esattamente le stesse usate dai metodi di put e get usate nella
 	//classe java LightBrightStatus
 	coap_activate_resource(&res_bright_controller, "actuator/brights");
@@ -92,7 +92,7 @@ PROCESS_THREAD(light_server, ev, data){
 
 	while(!registered) {
 		//qui mi genero l'id che simboleggia gli attuatori delle luci (va da 1 a 4)
-        uint16_t node_id = (rand()% 4) + 4) % 4 + 1;
+        uint16_t node_id = ((rand()% 4) + 4) % 4 + 1;
 		LOG_INFO("Sending registration message\n");
 		//qui prendo gli id che mi sono generato randomicamente e li mando al java,
 		//questo id che mando al java lo prende tramite una get json
@@ -104,7 +104,7 @@ PROCESS_THREAD(light_server, ev, data){
 		// Prepare the message
 		coap_init_message(&request, COAP_TYPE_CON, COAP_POST, 0);
 		coap_set_header_uri_path(&request, service_url);
-		coap_set_payload(&request, payload, strlen(payload);
+		coap_set_payload(&request, payload, strlen(payload));
 
 		COAP_BLOCKING_REQUEST(&server_ep, &request, client_chunk_handler);
 

@@ -14,25 +14,17 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
+import javax.xml.transform.TransformerConfigurationException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 public class RegistrationLightResource extends CoapResource {
     NodeData node;
-    private static LightBrightStatus lightBrightStatus = null;
 
-    static {
-        try {
-            lightBrightStatus = LightBrightStatus.getInstance();
-        } catch (ConnectorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public RegistrationLightResource(String name) {
-        super(name);
+    public RegistrationLightResource() {
+        super("registration");
+        setObservable(false);
     }
 
     public void handlePOST(CoapExchange exchange) {
@@ -66,8 +58,10 @@ public class RegistrationLightResource extends CoapResource {
             PoweringBrights poweringBrights = new PoweringBrights(lightId, ipv6);
             Thread threadBrights = new Thread(poweringBrights);
             threadBrights.start();*/
-        } catch (ParseException | SQLException e) {
+        } catch (Throwable e) {
+            e.printStackTrace();
             System.out.println("! ERROR during parsing");
+            exchange.respond(CoAP.ResponseCode.NOT_ACCEPTABLE,"Unsuccessful".getBytes(StandardCharsets.UTF_8));
         }
 
 

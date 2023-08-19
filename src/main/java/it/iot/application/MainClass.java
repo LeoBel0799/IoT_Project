@@ -17,10 +17,11 @@ public class MainClass {
         LightHandler motion = new LightHandler(brokerMotion,idmotion,topicMotion);
 
 
-       /* RegistrationServer registrationServer = new RegistrationServer();
-        Thread registrationServerThread = new Thread(registrationServer);
-        registrationServerThread.start();*/
+        RegistrationServer registrationServer = new RegistrationServer();
+        registrationServer.createRegistrationServer();
 
-        //UserMenu menu = new UserMenu();
+        UserMenu menu = new UserMenu();
+        Thread user = new Thread(menu);
+        user.start();
     }
 }
