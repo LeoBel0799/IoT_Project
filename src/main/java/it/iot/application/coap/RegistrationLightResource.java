@@ -2,22 +2,14 @@ package it.iot.application.coap;
 
 
 import it.iot.application.DB.NodeData;
-import it.iot.application.controller.LightBrightStatus;
-import it.iot.application.controller.PoweringBrights;
-import it.iot.application.controller.PoweringLights;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.elements.exception.ConnectorException;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
 
-import javax.xml.transform.TransformerConfigurationException;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 
 public class RegistrationLightResource extends CoapResource {
     NodeData node;
@@ -25,6 +17,7 @@ public class RegistrationLightResource extends CoapResource {
     public RegistrationLightResource() {
         super("registration");
         setObservable(false);
+
     }
 
     public void handlePOST(CoapExchange exchange) {
@@ -49,15 +42,6 @@ public class RegistrationLightResource extends CoapResource {
             exchange.respond(response);
             System.out.println(" >  " + res);
 
-/*            int lightId = id; // ipotizzo che l'id sia l'id della light
-            PoweringLights poweringLights = new PoweringLights(lightId, ipv6);
-            Thread threadLights = new Thread(poweringLights);
-            threadLights.start();
-
-            // Creazione e avvio thread PoweringBrights
-            PoweringBrights poweringBrights = new PoweringBrights(lightId, ipv6);
-            Thread threadBrights = new Thread(poweringBrights);
-            threadBrights.start();*/
         } catch (Throwable e) {
             e.printStackTrace();
             System.out.println("! ERROR during parsing");

@@ -7,6 +7,8 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.sql.SQLException;
 
 public class MainClass {
@@ -14,11 +16,31 @@ public class MainClass {
         String topicMotion = "motion";
         String brokerMotion = "tcp://127.0.0.1:1883";
         String idmotion = "lightHandler";
-        LightHandler motion = new LightHandler(brokerMotion,idmotion,topicMotion);
 
+
+        PrintStream dummy = new PrintStream(new OutputStream(){
+            public void write(int b) {}
+        });
+
+        PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
+
+        try{
+            System.setOut(dummy);
+            System.setErr(dummy);
+            LightHandler motion = new LightHandler(brokerMotion,idmotion,topicMotion);
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+        } finally {
+
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+
+        }
 
         RegistrationServer registrationServer = new RegistrationServer();
-        registrationServer.createRegistrationServer();
+        Thread ser = new Thread(registrationServer);
+        ser.start();
 
         UserMenu menu = new UserMenu();
         Thread user = new Thread(menu);
