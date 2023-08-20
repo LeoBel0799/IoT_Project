@@ -8,10 +8,11 @@ import java.sql.SQLException;
 
 public class PoweringBrights implements Runnable{
     private static LightBrightStatus coapClient = null;
-    ActuatorStatus actuatorStatus;
+    static ActuatorStatus actuatorStatus = null;
 
     static {
         try {
+            actuatorStatus = new ActuatorStatus();
             coapClient = new LightBrightStatus();
         } catch (ConnectorException e) {
             e.printStackTrace();

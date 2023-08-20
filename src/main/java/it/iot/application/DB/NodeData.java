@@ -12,34 +12,31 @@ import java.util.Map;
 public class NodeData  {
 
         public NodeData() throws ConnectorException, IOException {
-            System.out.println("[INFO] - Connected to Collector DB, ready to insert Node attribute in DB|");
-            ;
+            System.out.println("[INFO] - Connected to Collector DB, ready to insert Node attribute in DB");
         }
 
 
         private void createNodeTable() {
-            System.out.println("Sto creando la tabella \n");
             String sql = "CREATE TABLE node (" +
-                    "id INTEGER AUTOINCREMENT  PRIMARY KEY, " +
+                    "id INTEGER AUTO_INCREMENT  PRIMARY KEY, " +
                     "idlight INTEGER, " +
                     "ipv6 VARCHAR(70)" +
                     ");";
             try {
-                System.out.println("Entro nel try della connection al DB");
                 Connection conn = DB.connDb();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.executeUpdate(sql);
                 System.out.println("[OK] - Node table created!");
 
             } catch (SQLException e) {
-                System.err.println("[FAIL] - Error during creating nODE Table in DB\n");
+                System.err.println("[FAIL] - Error during creating Node Table in DB\n");
                 e.printStackTrace(System.err);
                 e.getMessage();
             }
         }
 
 
-        public void creatDelete(String table) throws SQLException {
+        public void createDelete(String table) throws SQLException {
             if (!DB.tableExists(table)) {
                 createNodeTable();
             }else{
@@ -48,13 +45,8 @@ public class NodeData  {
             }
         }
         public void insertNodeData(int id, String ipv6) throws SQLException {
-            System.out.println("ENTRO IN DB\n");
             String insert = "INSERT INTO node (idlight,IPv6) VALUES (?,?)";
-            if (!DB.tableExists("node")) {
-                System.out.println("PRIMA VOLTA CHE LO METTO");
-                createNodeTable();
-            }
-            System.out.println(" [INFO] - Receiving node data");
+            //System.out.println(" [INFO] - Receiving node data");
 
 
             try {
@@ -63,7 +55,7 @@ public class NodeData  {
                 stmt.setInt(1,id);
                 stmt.setString(2,ipv6);
                 stmt.executeUpdate();
-                System.out.println("[OK] - Node data inserted into DB");
+                //System.out.println("[OK] - Node data inserted into DB");
             }catch (SQLException e) {
                 System.err.println("[FAIL] - Error during insertion data into Node table\n");
                 e.printStackTrace(System.err);

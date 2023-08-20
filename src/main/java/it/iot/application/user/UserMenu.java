@@ -5,9 +5,11 @@ import it.iot.application.DB.LightData;
 import it.iot.application.DB.NodeData;
 import it.iot.application.controller.PoweringBrights;
 import it.iot.application.controller.PoweringLights;
+import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -21,14 +23,30 @@ public class UserMenu implements Runnable {
     final int SHOW_ACTUATORS = 6;
     private Scanner input;
     String ip = "127.0.0.1:5683";
-    LightData lightData;
-    NodeData nodeData;
-    ActuatorStatus actuatorStatus;
+    static LightData lightData;
+    static NodeData nodeData;
+    static ActuatorStatus actuatorStatus;
 
-
+    static {
+        try {
+            lightData = new LightData();
+            nodeData = new NodeData();
+            actuatorStatus = new ActuatorStatus();
+        } catch (ConnectorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void run() {
+        input = new Scanner(System.in);
+        try {
+            actuatorStatus.createDelete("actuator");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         menu();
     }
     public void menu() {
@@ -51,7 +69,12 @@ public class UserMenu implements Runnable {
                 case OPTION_TURN_ON_LIGHT:
                     int lightId = askForLightId();
                     PoweringLights lights = new PoweringLights(lightId, ip);
+                    System.out.println("Inserimento id da tastiera avvenuto");
                     Thread thlights = new Thread(lights);
+                    System.out.println("Thread dichiarato");
+                    thlights.start();
+                    System.out.println("Thread partito");
+
                     try {
                         thlights.join();
                     } catch (InterruptedException e) {
@@ -65,6 +88,7 @@ public class UserMenu implements Runnable {
                     int brightId = askForLightId();
                     PoweringBrights brights = new PoweringBrights(brightId, ip);
                     Thread thBrights = new Thread(brights);
+                    thBrights.start();
                     try {
                         thBrights.join();
                     } catch (InterruptedException e) {

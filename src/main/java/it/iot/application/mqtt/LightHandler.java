@@ -34,7 +34,7 @@ public class LightHandler implements MqttCallback, IMqttMessageListener, Runnabl
         mqttClient.subscribe(topic);
         System.out.println("[OK] - Connected to MQTT Broker. Subscribed to topic: " + topic);
         lightData = new LightData();
-        lightData.creatDelete("motion");
+        lightData.createDelete("motion");
         new Thread(this).start();
     }
 
@@ -77,7 +77,7 @@ public class LightHandler implements MqttCallback, IMqttMessageListener, Runnabl
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws InterruptedException {
-        System.out.println("[INFO] - Receiving Light message");
+        //System.out.println("[INFO] - Receiving Light message");
         String msg = new String(mqttMessage.getPayload());
         //System.out.println(msg);
         queue.put(msg);
@@ -116,7 +116,7 @@ public class LightHandler implements MqttCallback, IMqttMessageListener, Runnabl
                 String lights = (String) json.get("lights");
                 int lightsDegree =  ((Number)json.get("lightsDegree")).intValue();
                 String brights = (String) json.get("brights");
-                System.out.println("[INFO] - Taking data...");
+                //System.out.println("[INFO] - Taking data...");
                 lightData.insertMotionData(idlight,lights,lightsDegree,brights);
                 Thread.sleep(15000); // 50 millisecond
             } catch (ParseException | InterruptedException | SQLException e) {

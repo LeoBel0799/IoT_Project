@@ -40,7 +40,7 @@ public class LightData {
         }
     }
 
-    public void creatDelete(String table) throws SQLException {
+    public void createDelete(String table) throws SQLException {
         if (!DB.tableExists(table)) {
             createMotionTable();
         }else{
@@ -52,7 +52,7 @@ public class LightData {
     public void insertMotionData(int idlight, String lights, int lights_degree, String brights) throws SQLException {
         String insert = "INSERT INTO motion (idlight,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
 
-        System.out.println("[INFO] - Inserting  Light record in DB");
+        //System.out.println("[INFO] - Inserting  Light record in DB");
         int count = lightCounters.getOrDefault(idlight, 0) + 1;
         lightCounters.put(idlight, count);
 
@@ -65,7 +65,7 @@ public class LightData {
             stmt.setInt(4, lights_degree);
             stmt.setString(5, brights);
             stmt.executeUpdate();
-            System.out.println("[OK] - Light Data record inserted into DB");
+            //System.out.println("[OK] - Light Data record inserted into DB");
 
         }catch (SQLException e) {
             System.err.println("[FAIL] - Error during insertion data record into Motion table\n");

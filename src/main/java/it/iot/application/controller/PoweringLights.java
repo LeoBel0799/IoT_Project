@@ -9,26 +9,24 @@ import java.sql.SQLException;
 
 public class PoweringLights implements Runnable {
 
-    private static LightBrightStatus coapClient = null;
-    ActuatorStatus actuatorStatus;
-    static {
-        try {
-            coapClient = new LightBrightStatus();
-        } catch (ConnectorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private LightBrightStatus coapClient;
+    private ActuatorStatus actuatorStatus;
 
     private static final double MAX_WEAR_LEVEL = 5.0;
     int light;
     String address;
     LightData lightData;
 
-    public PoweringLights(int lightid, String addr) {
-        light= lightid;
-        address = addr;
+    public PoweringLights(int lightId, String address) {
+        this.light = lightId;
+        this.address = address;
+
+        try {
+            this.actuatorStatus = new ActuatorStatus();
+            this.coapClient = new LightBrightStatus();
+        } catch (Exception e) {
+            // gestisci eccezioni
+        }
     }
 
 
@@ -55,7 +53,7 @@ public class PoweringLights implements Runnable {
             coapClient.putLightsOn(address, res);
         }
         try {
-            String newStatus = LightBrightStatus.getInstance().getLightsOnOff(address);
+            String newStatus = coapClient.getLightsOnOff(address);
             actuatorStatus.insertActuatorData(
                     light,
                     newStatus,

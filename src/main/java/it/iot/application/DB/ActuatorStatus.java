@@ -16,7 +16,7 @@ public class ActuatorStatus {
 
     private void createActuator() {
         String sql = "CREATE TABLE actuator (" +
-                "id INTEGER AUTOINCREMENT  PRIMARY KEY, " +
+                "id INTEGER AUTO_INCREMENT  PRIMARY KEY, " +
                 "idActuator INTEGER, " +
                 "light VARCHAR(10), " +
                 "bright VARCHAR(10)," +
@@ -36,7 +36,7 @@ public class ActuatorStatus {
         }
     }
 
-    public void creatDelete(String table) throws SQLException {
+    public void createDelete(String table) throws SQLException {
         if (!DB.tableExists(table)) {
             createActuator();
         }else{
@@ -47,9 +47,6 @@ public class ActuatorStatus {
 
     public void insertActuatorData(int idActuator, String light, String bright, Double wearLevel, Boolean fulminated) throws SQLException {
         String insert = "INSERT INTO actuator (idActuator,light,bright,wearLevel,fulminated) VALUES (?,?,?,?,?)";
-        if (!db.tableExists("actuator")) {
-            createActuator();
-        }
         System.out.println("[INFO] - Receiving actuator data");
 
         try {

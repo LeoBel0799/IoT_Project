@@ -12,7 +12,7 @@ import java.io.PrintStream;
 import java.sql.SQLException;
 
 public class MainClass {
-    public static void main(String[] args) throws MqttException, ConnectorException, IOException, SQLException {
+    public static void main(String[] args) throws MqttException, ConnectorException, IOException, SQLException, InterruptedException {
         String topicMotion = "motion";
         String brokerMotion = "tcp://127.0.0.1:1883";
         String idmotion = "lightHandler";
@@ -28,6 +28,9 @@ public class MainClass {
 
         UserMenu menu = new UserMenu();
         Thread user = new Thread(menu);
-        user.start();
+        synchronized (user) {
+            user.start();
+            user.wait(5000);
+        }
     }
 }
