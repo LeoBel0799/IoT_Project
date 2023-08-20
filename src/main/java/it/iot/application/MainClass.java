@@ -18,32 +18,18 @@ public class MainClass {
         String idmotion = "lightHandler";
 
 
-        PrintStream dummy = new PrintStream(new OutputStream(){
-            public void write(int b) {}
-        });
 
-        PrintStream originalOut = System.out;
-        PrintStream originalErr = System.err;
+        LightHandler motion = new LightHandler(brokerMotion,idmotion,topicMotion);
 
-        try{
-            System.setOut(dummy);
-            System.setErr(dummy);
-            LightHandler motion = new LightHandler(brokerMotion,idmotion,topicMotion);
-            System.setOut(originalOut);
-            System.setErr(originalErr);
-        } finally {
-
-            System.setOut(originalOut);
-            System.setErr(originalErr);
-
-        }
 
         RegistrationServer registrationServer = new RegistrationServer();
         Thread ser = new Thread(registrationServer);
         ser.start();
-
+/*
         UserMenu menu = new UserMenu();
         Thread user = new Thread(menu);
         user.start();
+
+ */
     }
 }

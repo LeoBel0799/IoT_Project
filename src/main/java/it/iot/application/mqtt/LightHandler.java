@@ -79,7 +79,7 @@ public class LightHandler implements MqttCallback, IMqttMessageListener, Runnabl
     public void messageArrived(String topic, MqttMessage mqttMessage) throws InterruptedException {
         System.out.println("[INFO] - Receiving Light message");
         String msg = new String(mqttMessage.getPayload());
-        System.out.println(msg);
+        //System.out.println(msg);
         queue.put(msg);
 
     }
