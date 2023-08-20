@@ -18,12 +18,14 @@ public class NodeData  {
 
 
         private void createNodeTable() {
+            System.out.println("Sto creando la tabella \n");
             String sql = "CREATE TABLE node (" +
                     "id INTEGER AUTOINCREMENT  PRIMARY KEY, " +
                     "idlight INTEGER, " +
                     "ipv6 VARCHAR(70)" +
                     ");";
             try {
+                System.out.println("Entro nel try della connection al DB");
                 Connection conn = DB.connDb();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.executeUpdate(sql);
@@ -46,8 +48,10 @@ public class NodeData  {
             }
         }
         public void insertNodeData(int id, String ipv6) throws SQLException {
+            System.out.println("ENTRO IN DB\n");
             String insert = "INSERT INTO node (idlight,IPv6) VALUES (?,?)";
             if (!DB.tableExists("node")) {
+                System.out.println("PRIMA VOLTA CHE LO METTO");
                 createNodeTable();
             }
             System.out.println(" [INFO] - Receiving node data");

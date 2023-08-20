@@ -25,11 +25,9 @@ public class MainClass {
         RegistrationServer registrationServer = new RegistrationServer();
         Thread ser = new Thread(registrationServer);
         ser.start();
-/*
+
         UserMenu menu = new UserMenu();
         Thread user = new Thread(menu);
         user.start();
-
- */
     }
 }

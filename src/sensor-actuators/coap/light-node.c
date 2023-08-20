@@ -92,7 +92,7 @@ PROCESS_THREAD(light_server, ev, data){
 
 	while(!registered) {
 		//qui mi genero l'id che simboleggia gli attuatori delle luci (va da 1 a 4)
-        uint16_t node_id = ((rand()% 4) + 4) % 4 + 1;
+        uint16_t node_id = (rand()%4) + 1;
 		LOG_INFO("Sending registration message\n");
 		//qui prendo gli id che mi sono generato randomicamente e li mando al java,
 		//questo id che mando al java lo prende tramite una get json

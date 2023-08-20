@@ -30,10 +30,12 @@ public class RegistrationLightResource extends CoapResource {
             String res;
             // Obtain information from json message
             JSONObject json = (JSONObject) JSONValue.parseWithException(msg);
-            int id = (int) json.get("id");
+            String id_string = json.get("id").toString();
+            int id = Integer.parseInt(id_string);
 
             System.out.println("[!] Insertion node in the configuration table ... ");
             res = "{\"res\":\"ok\"}";
+            System.out.println("ID: "+id+" IPV6: "+ipv6);
             node.insertNodeData(id, ipv6);
             System.out.println("[!] Finish insertion node");
 
