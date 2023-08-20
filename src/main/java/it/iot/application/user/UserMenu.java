@@ -84,7 +84,10 @@ public class UserMenu implements Runnable {
                     //usa sempre quelli quindi se viene killato ogni tot secondi dovrebbe prendere quello più nuovo. Comunque
                     //il codice sotto non funziona.
                     //TODO: Nel caso in cui non vadano altri tentativi, capire e testare se la classe PoweringLights può essere fattasenza thread (con la chiamata secca dovrebbe prendere sempre il più aggiornato al momento della chiamata.
-                    //Per quanto rigurda la PUT, arriva a farla ma fallisce. Il caso di bright l'ho commentato perchè non funzionerebbe,
+                    //TODO: Implementare un meccanismo di controllo che nel caso nel menu di scelta di quale luce accendere, si va a scegliere una luce che ancora non è stata inserita nella tabella Motion (da rilevazione a inserimento nel db passa qualche secondo), riproponga di nuovo la possibilità di scelta
+                    //con messaggio "Rilevamento non ancora inserito...riprova".
+                    //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
+                    //Per quanto rigurda la PUT in coaè, arriva a farla ma fallisce. Il caso di bright l'ho commentato perchè non funzionerebbe,
                     //TODO: bisogna applicare le stesse mofiche fatte al costruttore di Powering Light anche per PoweringBrights.
                     //TODO: capire se dobbiamo avere 2 o 4 attuatori, perchè i sensori sono 4 in mqtt quindi sarebbe ottimale avrebbe 4 anche in coap dato che per ogni attuaotre spengo e accendo una luce, sui sensori fisici non dovrebbe essere un problems perhcè penso se la gestiscano in automatico.
                     //TODO: vedere se i metodi di visualizzazione dei dati nel menu funzionano
