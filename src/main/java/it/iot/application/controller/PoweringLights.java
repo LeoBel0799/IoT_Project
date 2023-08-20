@@ -1,7 +1,9 @@
 package it.iot.application.controller;
 
 import it.iot.application.DB.ActuatorStatus;
+import it.iot.application.DB.DB;
 import it.iot.application.DB.LightData;
+import it.iot.application.DB.NodeData;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
@@ -10,19 +12,25 @@ import java.sql.SQLException;
 public class PoweringLights implements Runnable {
 
     private LightBrightStatus coapClient;
-    private ActuatorStatus actuatorStatus;
 
     private static final double MAX_WEAR_LEVEL = 5.0;
     int light;
     String address;
     LightData lightData;
+    NodeData nodeData;
+    private ActuatorStatus actuatorStatus;
 
-    public PoweringLights(int lightId, String address) {
+    //TODO: Fare stesse modifiche apportate a questo costruttore anche a quello di Bright
+    public PoweringLights(int lightId, LightData lightData, NodeData nodeData, ActuatorStatus actuatorStatus) throws ConnectorException, IOException {
+        this.lightData = lightData;
+        this.nodeData = nodeData;
+        this.actuatorStatus = actuatorStatus;
+
+
+        String ipv6 = nodeData.getIPv6(lightId);
         this.light = lightId;
-        this.address = address;
-
+        this.address = ipv6;
         try {
-            this.actuatorStatus = new ActuatorStatus();
             this.coapClient = new LightBrightStatus();
         } catch (Exception e) {
             // gestisci eccezioni
@@ -34,22 +42,26 @@ public class PoweringLights implements Runnable {
     public void run() {
         boolean fulminated = false;
         Double wearLevelreceived = coapClient.getWearLevel(light);
+        System.out.println("wear level ricevuto: " + wearLevelreceived);
         String res;
         if (wearLevelreceived > MAX_WEAR_LEVEL){
              fulminated= true;
         }
         String status = lightData.getLightStatus(light);
+        System.out.println("status: " + status);
+        System.out.println("fulminated: " + fulminated);
+
         if (status.equals("ON") && fulminated == true) {
             res = "{\"mode\": \"OFF\"}";
-            System.out.println("[!] Sending PUT request (OFF) to Lights");
+            System.out.println("[INFO] - Sending PUT request (OFF) to Lights");
             coapClient.putLightsOff(address, res);
         } else if (status.equals("ON")) {
-            System.out.println("[!] Lights are already on");
+            System.out.println("[INFO] - Lights are already on");
         } else if (status.equals("OFF") && fulminated == true) {
-            System.out.println("[!] Cannot turn on lights, it's gone!");
+            System.out.println("[INFO] - Cannot turn on lights, it's gone!");
         } else if (status.equals("OFF")) {
             res = "{\"mode\": \"ON\"}";
-            System.out.println("[!] Sending PUT request (OFF) to Lights");
+            System.out.println("[INFO] - Sending PUT request (ON) to Lights");
             coapClient.putLightsOn(address, res);
         }
         try {

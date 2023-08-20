@@ -89,4 +89,72 @@ public class NodeData  {
     }
 
 
+    public boolean exists(int id) {
+
+        String selectQuery = "SELECT * FROM node WHERE idlight=?";
+
+        try {
+            Connection conn = DB.connDb();
+
+            PreparedStatement stmt = conn.prepareStatement(selectQuery);
+            stmt.setInt(1, id);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()) {
+                //se trova un record, l'ID esiste
+                return true;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        //se non trova record, ID non esiste
+        return false;
+
+    }
+
+    public static String getIPv6(int lightId) {
+
+        String selectQuery = "SELECT ipv6 FROM node WHERE idlight = ?";
+
+        try {
+            Connection conn = DB.connDb();
+            PreparedStatement stmt = conn.prepareStatement(selectQuery);
+            stmt.setInt(1, lightId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()) {
+                return rs.getString("ipv6");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    //aggiorna solo l'IP per un dato ID nodo
+    public void updateIPv6(int id, String newIPv6) {
+
+        String updateQuery = "UPDATE node SET ipv6=? WHERE idlight=?";
+
+        try {
+            Connection conn = DB.connDb();
+
+            PreparedStatement stmt = conn.prepareStatement(updateQuery);
+            stmt.setString(1, newIPv6);
+            stmt.setInt(2, id);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
 }

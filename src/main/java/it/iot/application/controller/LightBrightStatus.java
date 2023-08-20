@@ -27,7 +27,7 @@ public class LightBrightStatus {
 
 
     public String getLightsOnOff(String ip) throws ConnectorException, IOException {
-        String uri = "coap://" + ip + "/acuator/lights";
+        String uri = "coap://[" + ip + "]/actuator/lights";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
         if (coapResponse != null && coapResponse.isSuccess()) {
@@ -39,19 +39,19 @@ public class LightBrightStatus {
                 return lightStatus;
             } catch (ParseException e) {
                 e.printStackTrace();
-                System.out.println(" [!] # Error during reading JSON Response");
+                System.out.println("[FAIL] - Error during reading JSON Response");
                 // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
                 return "UNKNOWN";
             }
         } else {
-            System.out.println(" [!] # Error during CoAP request");
+            System.out.println("[FAIL] -Error during CoAP request");
             // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return "UNKNOWN";
         }
     }
 
     public void putLightsOn(String ip, String order) {
-        String uri = "coap://" + ip + "/actuator/lights";
+        String uri = "coap://[" + ip + "]/actuator/lights";
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
@@ -70,10 +70,11 @@ public class LightBrightStatus {
     }
 
     public void putLightsOff(String ip, String order) {
-        String uri = "coap://" + ip + "/actuator/lights";
+        String uri = "coap://[" + ip + "]/actuator/lights";
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
+            System.out.println("coap response: " + lights);
             System.out.println(" >  " + order);
             if (lights.isSuccess()) {
                 System.out.println("[+] PUT request succeeded");

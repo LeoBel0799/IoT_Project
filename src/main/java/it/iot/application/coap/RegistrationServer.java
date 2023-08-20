@@ -17,7 +17,7 @@ public class RegistrationServer extends CoapServer implements Runnable{
             server = new RegistrationServer();
             server.add(new RegistrationLightResource());
             server.start();
-            System.out.println("[INFO] - Registration server started successfully.");
+            //System.out.println("[INFO] - Registration server started successfully.");
         } catch (Exception e) {
             System.err.println("[ERROR] - An unexpected error occurred during server startup.");
             e.printStackTrace();

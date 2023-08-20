@@ -54,7 +54,14 @@ public class RegistrationLightResource extends CoapResource {
             //System.out.println("[!] Insertion node in the configuration table ... ");
             res = "{\"res\":\"ok\"}";
             //System.out.println("ID: "+id+" IPV6: "+ipv6);
-            node.insertNodeData(id, ipv6);
+            //controlla se l'ID nodo esiste già
+            if(node.exists(id)) {
+                //aggiorna solo l'IP
+                node.updateIPv6(id, ipv6);
+            } else {
+                //inserisci nuovo nodo
+                node.insertNodeData(id, ipv6);
+            }
            // System.out.println("[!] Finish insertion node");
 
             Response response = new Response(CoAP.ResponseCode.CONTENT);
