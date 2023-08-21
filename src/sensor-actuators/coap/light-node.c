@@ -25,10 +25,12 @@
 #define LOG_LEVEL LOG_LEVEL_APP
 #define NODE_1_ID 1
 #define NODE_2_ID 2
+#define NODE_3_ID 3
+#define NODE_4_ID 4
 #define INTERVAL_BETWEEN_CONNECTION_TESTS 1
 
 //dichiarazione array ID e indice
-uint16_t node_ids[] = {NODE_1_ID, NODE_2_ID};
+uint16_t node_ids[] = {NODE_1_ID,NODE_2_ID,NODE_3_ID,NODE_4_ID};
 uint8_t next_id = 0;
 //queste sono le coap resource che in java sono gestite tramite i due thread powering light e powering bright
 extern coap_resource_t res_light_controller;
@@ -55,20 +57,25 @@ static bool is_connected() {
 	return false;
 }
 
-void client_chunk_handler(coap_message_t *response) {
-	const uint8_t *chunk;
+void client_handler(coap_message_t *response) {
+	const  uint8_t *res_text = NULL;
 	if(response == NULL) {
 		LOG_INFO("Request timed out\n");
 		etimer_set(&wait_registration, CLOCK_SECOND* REGISTRATION_TRY_INTERVAL);
 		return;
 	}
 
-	int len = coap_get_payload(response, &chunk);
+	// Estrai il valore di "res" dalla risposta
+      int len = coap_get_post_variable(response, "res", &res_text);
 
-	if(strncmp((char*)chunk, "ok", len) == 0)
-		registered = true;
-	else
-		etimer_set(&wait_registration, CLOCK_SECOND* REGISTRATION_TRY_INTERVAL);
+      // Controlla il valore estratto
+      if(len > 0 && strcmp(res_text, "ok") == 0) {
+        registered = true;
+        LOG_INFO("[+] Actuator registered!\n");
+      } else {
+        // Registrazione fallita, riprova
+        etimer_set(&wait_registration, CLOCK_SECOND*REGISTRATION_TRY_INTERVAL);
+      }
 }
 
 PROCESS_THREAD(light_server, ev, data){
@@ -97,7 +104,7 @@ PROCESS_THREAD(light_server, ev, data){
 	while(!registered) {
 		//qui mi genero l'id che simboleggia gli attuatori delle luci (va da 1 a 4)
         uint16_t node_id = node_ids[next_id];
-         next_id = (next_id + 1) % 2;
+         next_id = (next_id + 1) % 4;
 
 		LOG_INFO("Sending registration message\n");
 		//qui prendo gli id che mi sono generato randomicamente e li mando al java,
@@ -118,4 +125,5 @@ PROCESS_THREAD(light_server, ev, data){
 	}
 
 	PROCESS_END();
+
 }

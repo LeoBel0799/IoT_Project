@@ -26,15 +26,14 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
 	size_t len = 0;
 	const char *text = NULL;
 
-	len = coap_get_post_variable(request, "light mode", &text);
-	if(len <= 0 || len >= 4)
-		goto error;
+	len = coap_get_post_variable(request, "mode", &text);
 
-	if(strncmp(text, "ON", len) == 0) {
+
+	if(len > 0 && strncmp(text, "ON", len) == 0) {
 		light_on = true;
 		leds_set(led);
 		LOG_INFO("Light ON\n");
-	} else if(strncmp(text, "OFF", len) == 0) {
+	} else if(len > 0 && strncmp(text, "OFF", len) == 0) {
 		light_on = false;
 		leds_off(LEDS_ALL);
 		LOG_INFO("Light OFF\n");

@@ -56,7 +56,7 @@ public class PoweringLights  {
             coapClient.putLightsOff(address, res);
         } else if (status.equals("ON")) {
             System.out.println("[INFO] - Lights are already on");
-        } else if (status.equals("OFF") && fulminated == true) {
+        } else if (fulminated == true) {
             System.out.println("[INFO] - Cannot turn on lights, it's gone!");
         } else if (status.equals("OFF")) {
             res = "{\"mode\": \"ON\"}";

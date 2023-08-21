@@ -52,7 +52,7 @@ public class RegistrationLightResource extends CoapResource {
             int id = Integer.parseInt(id_string);
 
             //System.out.println("[!] Insertion node in the configuration table ... ");
-            res = "{\"res\":\"ok\"}";
+            res = "{\"res\": \"ok\"}";
             //System.out.println("ID: "+id+" IPV6: "+ipv6);
             //controlla se l'ID nodo esiste già
             if(node.exists(id)) {

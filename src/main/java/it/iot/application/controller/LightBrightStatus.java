@@ -55,6 +55,7 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
+            System.out.println("Coap Response: " + lights);
             System.out.println(" >  " + order);
             if (lights.isSuccess()) {
                 System.out.println("[+] PUT request succeeded");
@@ -74,7 +75,7 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println("coap response: " + lights);
+            System.out.println("Coap Response: " + lights);
             System.out.println(" >  " + order);
             if (lights.isSuccess()) {
                 System.out.println("[+] PUT request succeeded");
