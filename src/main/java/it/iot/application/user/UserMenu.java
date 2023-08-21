@@ -79,8 +79,8 @@ public class UserMenu implements Runnable {
                     lights.setLight();
 
                     //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
-                    //TODO: Capire perchè non va la PUT (la richiesta è ok perchè arriva a stampare il COAP Response che 4.00 (codice errore) perche attuatori non reg, l'azione non la fa perchè gli attuatori non vengono registrati correttamente)
-                    //TODO: bisogna applicare le stesse mofiche fatte al costruttore di Powering Light anche per PoweringBrights.
+                    //TODO: Registrazione attuatori coap avviene con successo ma nel db viene messo solo uno (due volte) e il secondo no
+                    //TODO: Modificare Powring brights alla stessa maniera di Powering lights (togliendo thread e modificando costruttore)
                     //TODO: capire se dobbiamo avere 2 o 4 attuatori, perchè i sensori sono 4 in mqtt quindi sarebbe ottimale avrebbe 4 anche in coap dato che per ogni attuaotre spengo e accendo una luce, sui sensori fisici non dovrebbe essere un problems perhcè penso se la gestiscano in automatico.
                     //TODO: vedere se i metodi di visualizzazione dei dati nel menu funzionano
                     //TODO: capire e implementare come fare un observer sul counter di ogni sensore così chd ad un tot di counter raggiunti
@@ -142,7 +142,7 @@ public class UserMenu implements Runnable {
         int id;
 
         while(true) {
-            System.out.print("Insert light id (1-4): ");
+            System.out.print("Insert light id (1-2): ");
             id = input.nextInt();
 
             if(isValidLightId(id)) {
@@ -157,7 +157,7 @@ public class UserMenu implements Runnable {
     }
 
     boolean isValidLightId(int id) {
-        return id >= 1 && id <=4;
+        return id >= 1 && id <=2;
     }
 
 }
