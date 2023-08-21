@@ -76,8 +76,9 @@ public class UserMenu implements Runnable {
                 case OPTION_TURN_ON_LIGHT:
                     int lightId = askForLightId();
                     PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
-                    final Thread thlights = new Thread(lights);
-                    thlights.start();
+                    lights.setLight();
+                    //final Thread thlights = new Thread(lights);
+                    //thlights.start();
 
                     // Qua provo a killare e fare restart del thread. i dati sono vecchi (dati sono counter e wearLevel vedi nella
                     // classe PoweringLights) perchè il thread una volta avviato
@@ -93,7 +94,7 @@ public class UserMenu implements Runnable {
                     //TODO: vedere se i metodi di visualizzazione dei dati nel menu funzionano
                     //TODO: capire e implementare come fare un observer sul counter di ogni sensore così chd ad un tot di counter raggiunti
                             //per ogni sensore azzera il wearLevel e resetta l'attuatore
-                    Timer timer = new Timer();
+                    /*Timer timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
@@ -105,7 +106,7 @@ public class UserMenu implements Runnable {
                         thlights.join();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                    }
+                    }*/
 
                     break;
 

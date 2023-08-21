@@ -9,7 +9,7 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class PoweringLights implements Runnable {
+public class PoweringLights  {
 
     private LightBrightStatus coapClient;
 
@@ -38,8 +38,7 @@ public class PoweringLights implements Runnable {
     }
 
 
-    @Override
-    public void run() {
+    public void setLight() {
         boolean fulminated = false;
         Double wearLevelreceived = coapClient.getWearLevel(light);
         System.out.println("wear level ricevuto: " + wearLevelreceived);
