@@ -58,7 +58,7 @@ static bool is_connected() {
 }
 
 void client_handler(coap_message_t *response) {
-	const  uint8_t *res_text = NULL;
+	const  char *res_text = NULL;
 	if(response == NULL) {
 		LOG_INFO("Request timed out\n");
 		etimer_set(&wait_registration, CLOCK_SECOND* REGISTRATION_TRY_INTERVAL);
@@ -119,7 +119,7 @@ PROCESS_THREAD(light_server, ev, data){
 		coap_set_header_uri_path(&request, service_url);
 		coap_set_payload(&request, payload, strlen(payload));
 
-		COAP_BLOCKING_REQUEST(&server_ep, &request, client_chunk_handler);
+		COAP_BLOCKING_REQUEST(&server_ep, &request, client_handler);
 
 		PROCESS_WAIT_UNTIL(etimer_expired(&wait_registration));
 	}
