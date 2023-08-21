@@ -107,7 +107,7 @@ public class LightData {
         try {
             Connection conn = DB.connDb();
             // Query per ottenere il contatore
-            String sql = "SELECT MAX(counter) AS max_counter FROM motion WHERE id = ?";
+            String sql = "SELECT MAX(counter) AS counter FROM motion WHERE idlight = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, lightId);
 
