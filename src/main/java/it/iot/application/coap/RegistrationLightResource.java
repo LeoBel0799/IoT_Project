@@ -37,7 +37,7 @@ public class RegistrationLightResource extends CoapResource {
         setObservable(false);
 
     }
-
+    static int count = 0;
     public void handlePOST(CoapExchange exchange) {
         //System.out.println("Receiving POST");
         String msg = exchange.getRequestText();
@@ -50,6 +50,10 @@ public class RegistrationLightResource extends CoapResource {
             JSONObject json = (JSONObject) JSONValue.parseWithException(msg);
             String id_string = json.get("id").toString();
             int id = Integer.parseInt(id_string);
+            count= count +1;
+            System.out.println("STAMPO ID "+id+ "NUMERO ENTRATE : "+count);
+            System.out.println("STAMPO ipv6 "+id+ "NUMERO ENTRATE : "+count);
+
 
             //System.out.println("[!] Insertion node in the configuration table ... ");
             res = "{\"res\": \"ok\"}";
@@ -60,7 +64,7 @@ public class RegistrationLightResource extends CoapResource {
               //  node.updateIPv6(id, ipv6);
             //} else {
                 //inserisci nuovo nodo
-                node.insertNodeData(id, ipv6);
+            node.insertNodeData(count, ipv6);
                 //}
            // System.out.println("[!] Finish insertion node");
 

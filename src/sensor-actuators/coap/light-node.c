@@ -29,7 +29,7 @@
 
 //dichiarazione array ID e indice
 uint16_t node_ids[] = {NODE_1_ID,NODE_2_ID};
-uint8_t next_id = 0;
+static uint8_t next_id = 0;
 //queste sono le coap resource che in java sono gestite tramite i due thread powering light e powering bright
 extern coap_resource_t res_light_controller;
 extern coap_resource_t res_bright_controller;
@@ -138,9 +138,9 @@ PROCESS_THREAD(light_server, ev, data){
 
 	while(!registered) {
 		//qui mi genero l'id che simboleggia gli attuatori delle luci (va da 1 a 4)
-        next_id = (next_id + 1) % 2;
 
-        uint16_t node_id = node_ids[next_id];
+        next_id = next_id + 1;
+        uint16_t node_id = next_id ;
 
 		LOG_INFO("Sending registration message\n");
 		//qui prendo gli id che mi sono generato randomicamente e li mando al java,
@@ -158,6 +158,7 @@ PROCESS_THREAD(light_server, ev, data){
 		COAP_BLOCKING_REQUEST(&server_ep, &request, client_handler);
 
 		PROCESS_WAIT_UNTIL(etimer_expired(&wait_registration));
+
 	}
 
 	PROCESS_END();
