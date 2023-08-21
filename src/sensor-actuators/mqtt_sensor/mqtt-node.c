@@ -64,11 +64,11 @@ static char pub_topic_light[BUFFER_SIZE];
 #define MAX_CAPACITY 50
 
 // Periodic timer to check the state of the MQTT client
-#define STATE_MACHINE_PERIODIC     (CLOCK_SECOND >> 1)
+#define STATE_MACHINE_PERIODIC     5*CLOCK_SECOND
 static struct etimer periodic_timer;
 
-// Periodic timer to publish a message (every 30 sec)
-#define PUB_PERIOD 45 * CLOCK_SECOND
+// Periodic timer to publish a message (every 60 sec)
+#define PUB_PERIOD 60 * CLOCK_SECOND
 static struct etimer pub_timer;
 
 /*---------------------------------------------------------------------------*/
@@ -266,16 +266,16 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&led_etimer));
 			leds_off(LEDS_RED);
 
+            etimer_set(&pub_timer, PUB_PERIOD);
 
         } else if ( state == STATE_DISCONNECTED ){
             LOG_INFO("[FAIL] - Disconnected form MQTT broker--\n");
             // Recover from error
         }
 
-        etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
     }
 
-
+        etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
   }
 
   PROCESS_END();
