@@ -1,34 +1,34 @@
 package it.iot.application.controller;
 
 import it.iot.application.DB.ActuatorStatus;
+import it.iot.application.DB.NodeData;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class PoweringBrights implements Runnable{
-    private static LightBrightStatus coapClient = null;
-    static ActuatorStatus actuatorStatus = null;
-
-    static {
-        try {
-            actuatorStatus = new ActuatorStatus();
-            coapClient = new LightBrightStatus();
-        } catch (ConnectorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+public class PoweringBrights {
+    private  LightBrightStatus coapClient;
+    private ActuatorStatus actuatorStatus;
+    NodeData nodeData;
     int light;
     String address;
 
-    public PoweringBrights(int lightid, String addr) {
-        light= lightid;
-        address = addr;
+
+    public PoweringBrights(int lightId, ActuatorStatus actuatorStatus, NodeData nodeData) {
+        this.nodeData = nodeData;
+        this.actuatorStatus = actuatorStatus;
+        String ipv6 = nodeData.getIPv6(lightId);
+        this.address = ipv6;
+        this.light= lightId;
+        try {
+            this.coapClient = new LightBrightStatus();
+        } catch (Exception e) {
+            // gestisci eccezioni
+        }
     }
 
-    public void run() {
+    public void setBright() {
         String res;
         String status = null;
         try {

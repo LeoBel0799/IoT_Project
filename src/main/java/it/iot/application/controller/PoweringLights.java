@@ -20,7 +20,6 @@ public class PoweringLights  {
     NodeData nodeData;
     private ActuatorStatus actuatorStatus;
 
-    //TODO: Fare stesse modifiche apportate a questo costruttore anche a quello di Bright
     public PoweringLights(int lightId, LightData lightData, NodeData nodeData, ActuatorStatus actuatorStatus) throws ConnectorException, IOException {
         this.lightData = lightData;
         this.nodeData = nodeData;
