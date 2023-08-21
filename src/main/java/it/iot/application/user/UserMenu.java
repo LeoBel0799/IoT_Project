@@ -74,6 +74,7 @@ public class UserMenu implements Runnable {
 
             switch (choice) {
                 case OPTION_TURN_ON_LIGHT:
+                    System.out.println("STAI MODIFICANDO A LUCE");
                     int lightId = askForLightId();
                     PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
                     lights.setLight();

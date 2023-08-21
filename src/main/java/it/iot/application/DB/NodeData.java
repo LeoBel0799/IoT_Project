@@ -46,8 +46,6 @@ public class NodeData  {
         }
         public void insertNodeData(int id, String ipv6) throws SQLException {
             String insert = "INSERT INTO node (idlight,IPv6) VALUES (?,?)";
-            System.out.println(" [INFO] - Receiving node data");
-            System.out.println("ID : "+id+"IPV&: "+ ipv6+"\n");
 
             try {
                 Connection conn = DB.connDb();

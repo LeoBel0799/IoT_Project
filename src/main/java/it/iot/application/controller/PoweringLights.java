@@ -58,7 +58,8 @@ public class PoweringLights  {
         } else if (fulminated == true) {
             System.out.println("[INFO] - Cannot turn on lights, it's gone!");
         } else if (status.equals("OFF")) {
-            res = "{\"light\": \"ON\"}";
+           // res = "{\"light\": \"ON\"}";
+            res =  "{\"SPEGNIMENTO\"}";
             System.out.println("[INFO] - Sending PUT request (ON) to Lights");
             coapClient.putLightsOn(address, res);
         }

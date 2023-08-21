@@ -13,7 +13,12 @@
 extern uint8_t led;
 
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
-
+RESOURCE(res_light_controller,
+         "title=\"light controller\";rt=\"light\"",
+         NULL,
+         NULL,
+         light_put_handler,
+         NULL);
 void parse_json_light(char json[], int n_arguments, char arguments[][100]){
 
         int value_parsed = 0;
@@ -46,22 +51,27 @@ void parse_json_light(char json[], int n_arguments, char arguments[][100]){
     }
 
 
-RESOURCE(res_light_controller,
-         "title=\"light controller\";rt=\"Controller\"",
-         NULL,
-         NULL,
-         light_put_handler,
-         NULL);
+
 
 bool light_on = false;
 
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
 	//const char *text = NULL;
-    char message[300];
-    int number = 2;
-    char args[number][100];
-	parse_json_light(message, number, args);
+    //char message[300];
+    //int number = 2;
+    //char args[number][100];
+	//parse_json_light(message, number, args);
+    size_t len = 0;
+    const char *command = NULL;
 
+     if((len = coap_get_query_variable(request, "command", &command))){
+         LOG_DBG("Il comando è %.*s\n", (int)len, command);
+         if(strncmp(command, "SPEGNIMENTO", len) == 0){
+            light_on = true;
+            LOG_INFO("Light ON\n");
+         }
+     }
+    /*
     if(strcmp(args[0], "light") == 0) {
             if(strcmp(args[1], "ON") == 0) {
               light_on = true;
@@ -77,8 +87,8 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
       } else {
         goto error;
       }
-
+    */
 	return;
-error:
-	coap_set_status_code(response, BAD_REQUEST_4_00);
+/*error:
+	coap_set_status_code(response, BAD_REQUEST_4_00);*/
 }
