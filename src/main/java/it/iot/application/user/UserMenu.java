@@ -79,7 +79,7 @@ public class UserMenu implements Runnable {
                     lights.setLight();
 
                     //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
-                    //TODO: Capire perchè non va la PUT (la richiesta è ok, l'azione non la fa perchè gli attuatori non vengono registrati correttamente)
+                    //TODO: Capire perchè non va la PUT (la richiesta è ok perchè arriva a stampare il COAP Response che 4.00 (codice errore) perche attuatori non reg, l'azione non la fa perchè gli attuatori non vengono registrati correttamente)
                     //TODO: bisogna applicare le stesse mofiche fatte al costruttore di Powering Light anche per PoweringBrights.
                     //TODO: capire se dobbiamo avere 2 o 4 attuatori, perchè i sensori sono 4 in mqtt quindi sarebbe ottimale avrebbe 4 anche in coap dato che per ogni attuaotre spengo e accendo una luce, sui sensori fisici non dovrebbe essere un problems perhcè penso se la gestiscano in automatico.
                     //TODO: vedere se i metodi di visualizzazione dei dati nel menu funzionano

@@ -179,7 +179,7 @@ have_connectivity(void)
 // Functions to return measurement
 void set_light(char msg[]){
 //Value track from the sensor
-    int lightId = (rand()%4) + 1;
+    int lightId = (rand()%2) + 1;
     int light = (rand()%2);
     char* light_str = light ? "\"ON\"" : "\"OFF\"";
     int light_degree = (rand()%3);
