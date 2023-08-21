@@ -14,7 +14,7 @@ extern uint8_t led;
 
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
-void parse_json(char json[], int n_arguments, char arguments[][100]){
+void parse_json_light(char json[], int n_arguments, char arguments[][100]){
 
         int value_parsed = 0;
         int len = 0;
@@ -56,19 +56,18 @@ RESOURCE(res_light_controller,
 bool light_on = false;
 
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
-	size_t len = 0;
-	const char *text = NULL;
-	const char *text = NULL;
-    char arguments[MAX_ARGS][ARG_LEN];
-	len = coap_get_post_variable(request, buffer, preferred_size);
-	parse_json(buffer, MAX_ARGS, arguments);
+	//const char *text = NULL;
+    char message[300];
+    int number = 2;
+    char args[number][100];
+	parse_json_light(message, number, args);
 
-    if(strcmp(arguments[0], "light") == 0) {
-            if(strcmp(arguments[1], "ON") == 0) {
+    if(strcmp(args[0], "light") == 0) {
+            if(strcmp(args[1], "ON") == 0) {
               light_on = true;
               leds_set(led);
               LOG_INFO("Light ON\n");
-            } else if (strcmp(arguments[1], "OFF") == 0) {
+            } else if (strcmp(args[1], "OFF") == 0) {
               light_on = false;
               leds_off(LEDS_ALL);
               LOG_INFO("Light OFF\n");
