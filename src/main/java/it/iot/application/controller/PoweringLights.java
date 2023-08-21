@@ -50,7 +50,7 @@ public class PoweringLights  {
         System.out.println("fulminated: " + fulminated);
 
         if (status.equals("ON") && fulminated == true) {
-            res = "{\"mode\": \"OFF\"}";
+            res = "{\"light\": \"OFF\"}";
             System.out.println("[INFO] - Sending PUT request (OFF) to Lights");
             coapClient.putLightsOff(address, res);
         } else if (status.equals("ON")) {
@@ -58,7 +58,7 @@ public class PoweringLights  {
         } else if (fulminated == true) {
             System.out.println("[INFO] - Cannot turn on lights, it's gone!");
         } else if (status.equals("OFF")) {
-            res = "{\"mode\": \"ON\"}";
+            res = "{\"light\": \"ON\"}";
             System.out.println("[INFO] - Sending PUT request (ON) to Lights");
             coapClient.putLightsOn(address, res);
         }

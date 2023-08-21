@@ -46,11 +46,11 @@ public class PoweringBrights {
         }
 
         if (brightsStatus.equals("ON")) {
-            res = "{\"mode\": \"ON\"}";
+            res = "{\"bright\": \"ON\"}";
             System.out.println("[!] Sending PUT request (ON) to Brights");
             coapClient.putBrightsOn(address, res);
         } else  {
-            res = "{\"mode\": \"OFF\"}";
+            res = "{\"bright\": \"OFF\"}";
             System.out.println("[!] Sending PUT request (OFF) to Brights");
             coapClient.putBrightsOff(address, res);
         }
