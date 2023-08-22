@@ -10,7 +10,8 @@
 #define LOG_LEVEL LOG_LEVEL_APP
 #define MAX_ARGS 10
 #define ARG_LEN 100
-extern bool bright_on;
+bool bright_on = false;
+
 
 static void bright_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void bright_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
