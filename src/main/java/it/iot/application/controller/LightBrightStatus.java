@@ -45,6 +45,40 @@ public class LightBrightStatus {
         }
     }
 
+
+    public String[] getWearLevel(String ip) throws ConnectorException, IOException {
+        String uri = "coap://[" + ip + "]/actuator/data";
+        CoapClient coapClient = new CoapClient(uri);
+        CoapResponse coapResponse = coapClient.get();
+        System.out.println("Coap response nella GET Wear: " + coapResponse);
+        String[] results = new String[2];
+
+        if (coapResponse != null && coapResponse.isSuccess()) {
+            String responseText = coapResponse.getResponseText();
+            if(responseText == null || responseText.length() == 0) {
+                return null;
+            } else {
+                String[] parts = responseText.split(",");
+
+                // Il primo elemento è wearLevel
+                float wearLevel = Float.parseFloat(parts[0].substring(9));
+
+                // Il secondo elemento è fulminated
+                boolean fulminated = parts[1].substring(11).equals("true");
+                // Imposta i risultati da ritornare
+                results[0] = String.valueOf(wearLevel);
+                results[1] = String.valueOf(fulminated);
+
+                return results;
+            }
+        } else {
+            System.out.println("[FAIL] -Error during CoAP (GET light) request");
+            // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+            return null;
+        }
+    }
+
+
     public void putLightsOn(String ip, String order) {
         String uri = "coap://[" + ip + "]/actuator/lights";
         CoapClient coapClient = new CoapClient(uri);
@@ -85,25 +119,42 @@ public class LightBrightStatus {
 
     }
 
+
+    public void sendWearLevel(String ip, String wearLevel, String fulminated) throws ConnectorException, IOException {
+        String uri = "coap://[" + ip + "]/actuator/data";
+        CoapClient coapClient = new CoapClient(uri);
+        // crea payload
+        String payload = wearLevel + "," + fulminated;
+
+        CoapResponse response = coapClient.post(payload, MediaTypeRegistry.TEXT_PLAIN);
+
+        if(response.isSuccess()) {
+            System.out.println("[OK]- Data send successfully");
+        } else {
+            System.out.println("[FAIL]- Something went wrong in sending");
+        }
+
+        coapClient.shutdown();
+
+    }
+
+
+
+
     public String getBrightsOnOff(String ip) throws ConnectorException, IOException {
-        String uri = "coap://" + ip + "/sensor/motion";
+        String uri = "coap://[" + ip + "]/actuator/brights";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
+        System.out.println("Coap response nella GET Bright: " + coapResponse);
         if (coapResponse != null && coapResponse.isSuccess()) {
             String responseText = coapResponse.getResponseText();
-            try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseText);
-                String lightStatus = (String) obj.get("brights");
-                return lightStatus;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.out.println(" [!] # Error during reading JSON Response");
-                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+            if(responseText == null || responseText.length() == 0) {
                 return "UNKNOWN";
+            } else {
+                return responseText;
             }
         } else {
-            System.out.println(" [!] # Error during CoAP request");
+            System.out.println("[FAIL] -Error during CoAP (GET Bright) request");
             // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return "UNKNOWN";
         }
