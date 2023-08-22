@@ -33,16 +33,10 @@ public class LightBrightStatus {
         System.out.println("Coap response nella GET Light: " + coapResponse);
         if (coapResponse != null && coapResponse.isSuccess()) {
             String responseText = coapResponse.getResponseText();
-            try {
-                JSONParser parser = new JSONParser();
-                JSONObject obj = (JSONObject) parser.parse(responseText);
-                String lightStatus = (String) obj.get("lights");
-                return lightStatus;
-            } catch (ParseException e) {
-                e.printStackTrace();
-                System.out.println("[FAIL] - Error during reading JSON Response");
-                // In caso di errore, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
+            if(responseText == null || responseText.length() == 0) {
                 return "UNKNOWN";
+            } else {
+                return responseText;
             }
         } else {
             System.out.println("[FAIL] -Error during CoAP (GET light) request");
