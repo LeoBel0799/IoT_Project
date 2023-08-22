@@ -28,24 +28,15 @@ public class PoweringBrights {
         }
     }
 
-    public void setBright() {
+    public void setBright(int lightID) {
         String res;
         String status = null;
         try {
-            status = LightBrightStatus.getInstance().getLightsOnOff(address);
-        } catch (ConnectorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            status = actuatorStatus.getLightStatusFromActuator(lightID);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-        String brightsStatus;
-        if(status.equals("ON")) {
-            brightsStatus = "ON";
-        } else {
-            brightsStatus = "OFF";
-        }
-
-        if (brightsStatus.equals("ON")) {
+        if (status.equals("ON")) { //se la luce con quell'id è accesa posso accendere anche gli abbaglianti
             res = "{\"ON\"}";
             System.out.println("[!] Sending PUT request (ON) to Brights");
             coapClient.putBrightsOn(address, res);
@@ -55,7 +46,9 @@ public class PoweringBrights {
             coapClient.putBrightsOff(address, res);
         }
         try {
-            String newStatus = LightBrightStatus.getInstance().getLightsOnOff(address);
+
+            //l'usura per gli abbaglianti non è prevista, si aggancia a light. qua registstro solo il nuovo stato di bright
+            String newStatus = LightBrightStatus.getInstance().getBrightsOnOff(address);
             actuatorStatus.insertActuatorData(
                     light,
                     null,
