@@ -51,9 +51,6 @@ public class RegistrationLightResource extends CoapResource {
             String id_string = json.get("id").toString();
             int id = Integer.parseInt(id_string);
             count= count +1;
-            System.out.println("STAMPO ID "+id+ "NUMERO ENTRATE : "+count);
-            System.out.println("STAMPO ipv6 "+id+ "NUMERO ENTRATE : "+count);
-
 
             //System.out.println("[!] Insertion node in the configuration table ... ");
             res = "{\"res\": \"ok\"}";

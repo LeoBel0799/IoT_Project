@@ -30,6 +30,7 @@ public class LightBrightStatus {
         String uri = "coap://[" + ip + "]/actuator/lights";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
+        System.out.println("Coap response nella GET Light: " + coapResponse);
         if (coapResponse != null && coapResponse.isSuccess()) {
             String responseText = coapResponse.getResponseText();
             try {
@@ -44,7 +45,7 @@ public class LightBrightStatus {
                 return "UNKNOWN";
             }
         } else {
-            System.out.println("[FAIL] -Error during CoAP request");
+            System.out.println("[FAIL] -Error during CoAP (GET light) request");
             // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return "UNKNOWN";
         }
