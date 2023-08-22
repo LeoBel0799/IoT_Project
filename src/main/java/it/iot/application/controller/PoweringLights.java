@@ -1,7 +1,6 @@
 package it.iot.application.controller;
 
 import it.iot.application.DB.ActuatorStatus;
-import it.iot.application.DB.DB;
 import it.iot.application.DB.LightData;
 import it.iot.application.DB.NodeData;
 import org.eclipse.californium.elements.exception.ConnectorException;
@@ -39,13 +38,16 @@ public class PoweringLights  {
 
     public void setLight() throws ConnectorException, IOException, SQLException {
         boolean fulminated = false;
+        //Qua mi prendo il wearLevel di una determinata luce getWearLevel calcola l'usura prendendo il contatore inserito in lighthdata
         Double wearLevelreceived = coapClient.getWearLevel(light);
         System.out.println("wear level ricevuto: " + wearLevelreceived);
         String res;
-
+        //se il wearlevel di quella luce supera la soglia massima
+        //dall'attuatore mi prendo i dati resettati tramite bottone e li rimetto nel DB
+        //facendo l'update di wear e fulminated per quello stesso ID
         if (wearLevelreceived > MAX_WEAR_LEVEL){
              fulminated= true;
-             String[] results = coapClient.getWearLevel(address);
+             String[] results = coapClient.getWearAndFulminatedFromActuator(address);
             float wear = Float.parseFloat(results[0]);
             boolean fulm = Boolean.parseBoolean(results[1]);
             actuatorStatus.insertWearAndFulminatedResetted(light,wear,fulm);
@@ -78,11 +80,12 @@ public class PoweringLights  {
                     wearLevelreceived,
                     fulminated
                         );
-
+            //qua mi prendo i dati di wear e fulminated dalla tabella e li mando al coap client
             String[] data = actuatorStatus.getActuatorData(light);
             String wearLevel = data[0];
             String fulm = data[1];
             //fulminated viene mandato come 0/1
+            //qua mando al coap nel quale poi viene gestito tramite obs e bottone (vedi light-node.c)
             coapClient.sendWearLevel(address,wearLevel,fulm);
 
         } catch (ConnectorException e) {

@@ -45,7 +45,7 @@ int wear_level = 0;     // Livello di usura
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
 
-/* Declare and auto-start this file's process */
+//dati che sono due processi servono due dichiarazioni e partono con autostart
 PROCESS(light_server, "Car controller");
 PROCESS(wear_controller, "COAP Wear obs");
 AUTOSTART_PROCESSES(&light_server,&wear_controller);
@@ -182,18 +182,20 @@ PROCESS_THREAD(wear_controller, ev, data) {
     button_hal_init();
 
     while (1) {  // Loop infinito
-        // Accendi il LED rosso solo quando è necessario
+        // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated
             leds_on(LEDS_RED);  // Accendi il LED rosso
             etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
             leds_off(LEDS_RED);  // Spegni il LED rosso
 
-        // Controlla il bottone e azzeramento
+        // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
+        //questi nuovi dati resettati devono essere mandati nel java e nel fb
         if (ev == button_hal_release_event) {
             fulminated = false;
             wear_level = 0;
             LOG_INFO("[OK] - Item replaced\n");
-            leds_off(LEDS_BLUE);  // Assicurati che il LED blu sia spento
+            leds_on(LEDS_BLUE);
+            //questo è per notificare agli osservatori
             res_event_handler();
         }
     }

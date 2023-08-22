@@ -12,7 +12,6 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 
 public class LightBrightStatus {
-    private static CoapClient motionApp = null;
     LightData light = new LightData();
     private static LightBrightStatus instance = null;
 
@@ -45,8 +44,8 @@ public class LightBrightStatus {
         }
     }
 
-
-    public String[] getWearLevel(String ip) throws ConnectorException, IOException {
+    //questo prende i dati nuovi dal coap e me li porta in Java per poi metterli nel DB
+    public String[] getWearAndFulminatedFromActuator(String ip) throws ConnectorException, IOException {
         String uri = "coap://[" + ip + "]/actuator/data";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
