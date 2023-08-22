@@ -6,13 +6,15 @@
 #include "coap-engine.h"
 #include "dev/leds.h"
 #include "coap-blocking-api.h"
-
+#include "coap-observe.h"
+#include "coap-separate.h"
 #include "node-id.h"
 #include "net/ipv6/simple-udp.h"
 #include "net/ipv6/uip.h"
 #include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip-debug.h"
 #include "routing/routing.h"
+#include "dev/button-hal.h"
 
 #define SERVER_EP "coap://[fd00::1]:5683"
 #define CONNECTION_TRY_INTERVAL 1
@@ -26,23 +28,81 @@
 #define NODE_2_ID 2
 
 #define INTERVAL_BETWEEN_CONNECTION_TESTS 1
-
+static struct etimer pub_timer;
 //dichiarazione array ID e indice
 uint16_t node_ids[] = {NODE_1_ID,NODE_2_ID};
 static uint8_t next_id = 0;
 //queste sono le coap resource che in java sono gestite tramite i due thread powering light e powering bright
 extern coap_resource_t res_light_controller;
 extern coap_resource_t res_bright_controller;
+extern coap_resource_t res_wearLevel_observer;
 
 char *service_url = "/registration";
 static bool registered = false;
-
+size_t payload_length = 0;  // Lunghezza del payload ricevuto
+bool fulminated = false;    // Flag per indicare se è fulminato
+int wear_level = 0;     // Livello di usura
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
 
 /* Declare and auto-start this file's process */
 PROCESS(light_server, "Car controller");
-AUTOSTART_PROCESSES(&light_server);
+PROCESS(wear_controller, "COAP Wear obs");
+AUTOSTART_PROCESSES(&light_server,&wear_controller);
+
+
+// Dichiarazione delle variabili globali
+
+static void res_event_handler(void);
+static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+
+
+EVENT_RESOURCE(res_wearLevel_observer,
+         "title=\"wearLevel observer\";obs",
+         res_get_handler_coap_values,
+         res_post_handler,
+         res_post_handler,
+         NULL,
+         res_event_handler);
+
+// Funzione di gestione della richiesta POST CoAP
+static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
+    const uint8_t *payload = NULL;
+    size_t payload_length = coap_get_payload(request, &payload);
+
+    char payload_str[payload_length + 1];
+    memcpy(payload_str, payload, payload_length);
+    payload_str[payload_length] = '\0';
+
+    // Tokenizza la stringa
+    char* token = strtok(payload_str, ",");
+    if (token != NULL) {
+        wear_level = atof(token);
+
+        // Leggi secondo valore e converte in bool
+        token = strtok(NULL, ",");
+        if (token != NULL) {
+            fulminated = (*token == '1');
+        }
+    }
+
+
+}
+
+static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
+    char response_payload[64];
+    int length = snprintf(response_payload, sizeof(response_payload), "wearLevel=%.2d,fulminated=%s",
+                          wear_level, fulminated ? "true" : "false");
+
+    coap_set_header_content_format(response, TEXT_PLAIN);
+    coap_set_payload(response, response_payload, length);
+}
+
+
+static void res_event_handler(void){
+	coap_notify_observers(&res_wearLevel_observer);
+}
 
 /*---------------------------------------------------------------------------*/
 static bool is_connected() {
@@ -113,6 +173,37 @@ void client_handler(coap_message_t *response) {
       }
 }
 
+
+
+PROCESS_THREAD(wear_controller, ev, data) {
+    PROCESS_BEGIN();
+
+    // Inizializza il bottone
+    button_hal_init();
+
+    while (1) {  // Loop infinito
+        // Accendi il LED rosso solo quando è necessario
+            leds_on(LEDS_RED);  // Accendi il LED rosso
+            etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
+            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
+            leds_off(LEDS_RED);  // Spegni il LED rosso
+
+        // Controlla il bottone e azzeramento
+        if (ev == button_hal_release_event) {
+            fulminated = false;
+            wear_level = 0;
+            LOG_INFO("[OK] - Item replaced\n");
+            leds_off(LEDS_BLUE);  // Assicurati che il LED blu sia spento
+            res_event_handler();
+        }
+    }
+
+    PROCESS_END();
+}
+
+
+
+
 PROCESS_THREAD(light_server, ev, data){
 	PROCESS_BEGIN();
     next_id=0;
@@ -127,8 +218,8 @@ PROCESS_THREAD(light_server, ev, data){
 	//classe java LightBrightStatus
 	coap_activate_resource(&res_bright_controller, "actuator/brights");
 	coap_activate_resource(&res_light_controller, "actuator/lights");
-
-	// try to connect to the border router
+     // Abilita obs su wear level
+    coap_activate_resource(&res_wearLevel_observer, "actuator/data");
 	etimer_set(&connectivity_timer, CLOCK_SECOND * INTERVAL_BETWEEN_CONNECTION_TESTS);
 	PROCESS_WAIT_UNTIL(etimer_expired(&connectivity_timer));
 	while(!is_connected()) {
@@ -160,7 +251,6 @@ PROCESS_THREAD(light_server, ev, data){
 		PROCESS_WAIT_UNTIL(etimer_expired(&wait_registration));
 
 	}
-
 	PROCESS_END();
 
 
