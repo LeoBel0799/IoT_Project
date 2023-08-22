@@ -33,11 +33,12 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
      if((len = coap_get_query_variable(request, "command", &command))){
          LOG_DBG("Command received is %.*s\n", (int)len, command);
          if(strncmp(command, "ON", len) == 0){
+            leds_on(LEDS_BLUE);
             light_on = true;
             LOG_INFO("Light ON\n");
 
          }else if (strncmp(command,"OFF",len) == 0){
-            light_on = false;
+                light_on = false;
              leds_off(LEDS_ALL);
              LOG_INFO("Light OFF\n");
 
