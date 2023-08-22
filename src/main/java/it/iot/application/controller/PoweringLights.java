@@ -37,13 +37,18 @@ public class PoweringLights  {
     }
 
 
-    public void setLight() {
+    public void setLight() throws ConnectorException, IOException, SQLException {
         boolean fulminated = false;
         Double wearLevelreceived = coapClient.getWearLevel(light);
         System.out.println("wear level ricevuto: " + wearLevelreceived);
         String res;
+
         if (wearLevelreceived > MAX_WEAR_LEVEL){
              fulminated= true;
+             String[] results = coapClient.getWearLevel(address);
+            float wear = Float.parseFloat(results[0]);
+            boolean fulm = Boolean.parseBoolean(results[1]);
+            actuatorStatus.insertWearAndFulminatedResetted(light,wear,fulm);
         }
         String status = lightData.getLightStatus(light);
         System.out.println("status: " + status);
@@ -73,6 +78,13 @@ public class PoweringLights  {
                     wearLevelreceived,
                     fulminated
                         );
+
+            String[] data = actuatorStatus.getActuatorData(light);
+            String wearLevel = data[0];
+            String fulm = data[1];
+            //fulminated viene mandato come 0/1
+            coapClient.sendWearLevel(address,wearLevel,fulm);
+
         } catch (ConnectorException e) {
             e.printStackTrace();
         } catch (IOException | SQLException e) {
