@@ -54,9 +54,11 @@ public class UserMenu implements Runnable {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
-    public void menu() throws ConnectorException, IOException, InterruptedException {
+    public void menu() throws ConnectorException, IOException, InterruptedException, SQLException {
         boolean shouldExit = false;
         Scanner input = new Scanner(System.in);
         while (!shouldExit){
@@ -78,12 +80,27 @@ public class UserMenu implements Runnable {
                     int lightId = askForLightId();
                     PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
                     lights.setLight();
+                    /*
+                    SPIEGAZIONE DI COME è STATO IMPLMENTATO OBS, CON RELATIVO CAMBIO AUTOMATICO DEI VALORI SOTTO PRESSIONE DI UN BOTTONE
+                    Lato Java:
+                    Il codice Java effettua una richiesta GET CoAP al nodo C per ottenere i valori correnti di wearLevel e fulminated. Questi vengono ritornati in una stringa separata da virgola.
+                    Java elabora la risposta splittandola e convertendo wearLevel in float e fulminated in boolean.
+                    In base ai valori ottenuti, il codice decide se accendere/spegnere la luce e se resettare i valori.
+                    Dopo aver inviato il comando di accensione/spegnimento tramite una richiesta PUT CoAP, il codice rilegge lo stato corrente della luce con una nuova richiesta GET.
+                    I nuovi valori di stato, wearLevel e fulminated vengono salvati nel database tramite chiamate JDBC.
+                    Infine il codice invia i nuovi valori di wearLevel e fulminated come stringa al nodo C tramite una richiesta POST CoAP.
+                    Lato C:
 
+                    All'avvio, il nodo C espone una risorsa CoAP osservabile per wearLevel e fulminated.
+                    Alla richiesta GET Java, il gestore della risorsa crea la stringa di risposta con i valori correnti e la ritorna.
+                    Alla ricezione della richiesta POST Java, il gestore aggiorna le variabili globali wearLevel e fulminated.
+                    Alle successive richieste GET, i valori aggiornati verranno letti dalle variabili globali e ritornati a Java.
+                    Se viene premuto il pulsante, wearLevel e fulminated vengono resettati e la risorsa notifica Java tramite una osservazione CoAP.
+                    In sintesi, Java e C si scambiano i dati su wearLevel e fulminated tramite richieste CoAP. Java decide le azioni da intraprendere e salva lo storico nel DB. C mantiene i valori correnti in memoria e li notifica a Java quando cambiano.
+                    */
                     //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
                     //TODO: Registrazione attuatori coap avviene con successo ma nel db viene messo solo uno (due volte) e il secondo no
-                    //TODO: capire se dobbiamo avere 2 o 4 attuatori, perchè i sensori sono 4 in mqtt quindi sarebbe ottimale avrebbe 4 anche in coap dato che per ogni attuaotre spengo e accendo una luce, sui sensori fisici non dovrebbe essere un problems perhcè penso se la gestiscano in automatico.
                     //TODO: vedere se i metodi di visualizzazione dei dati nel menu funzionano
-                    //TODO: capire e implementare come fare un observer sul counter di ogni sensore così chd ad un tot di counter raggiunti
 
                     break;
 
@@ -92,7 +109,7 @@ public class UserMenu implements Runnable {
                    // brights
                     int brightId = askForLightId();
                     PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
-                    brights.setBright();
+                    brights.setBright(brightId);
                     break;
 
                 case SHOW_MOTION:
