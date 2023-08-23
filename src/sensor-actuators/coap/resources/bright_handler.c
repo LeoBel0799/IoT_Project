@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "contiki.h"
 #include "coap-engine.h"
 #include "dev/leds.h"
@@ -59,7 +61,7 @@ static void bright_put_handler(coap_message_t *request, coap_message_t *response
 static void bright_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
   int length = 0;
   const char* message;
-
+    usleep(100000);
   if (bright_on == true){
       length = 2;
       message = "ON";

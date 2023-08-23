@@ -25,7 +25,8 @@ public class LightData {
                 "counter INTEGER," +
                 "lights VARCHAR(5), " +
                 "lightsDegree INTEGER, " +
-                "brights VARCHAR(5)"+
+                "brights VARCHAR(5),"+
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"+
                 ");";
         try {
             Connection conn = DB.connDb();
@@ -76,29 +77,21 @@ public class LightData {
 
     public String getLightStatus(int lightId) {
         String lightStatus = null;
-
         try {
             Connection conn = DB.connDb();
-
-            String sql = "SELECT lights FROM motion WHERE id = ?";
-
+            String sql = "SELECT lights FROM motion WHERE idlight=? ORDER BY created_at DESC LIMIT 1";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, lightId);
-
             ResultSet rs = stmt.executeQuery();
-
             if (rs.next()) {
                 lightStatus = rs.getString("lights");
             }
-
         } catch (SQLException e) {
             System.err.println("[FAIL] - Error during reading Light status data from DB");
             e.printStackTrace(System.err);
             e.getMessage();
         }
-
         return lightStatus;
-
     }
 
     public int getCounterForLight(int lightId) {

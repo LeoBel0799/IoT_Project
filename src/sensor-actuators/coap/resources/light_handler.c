@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "contiki.h"
 #include "coap-engine.h"
 #include "dev/leds.h"
@@ -38,7 +40,7 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
             LOG_INFO("Light ON\n");
 
          }else if (strncmp(command,"OFF",len) == 0){
-                light_on = false;
+             light_on = false;
              leds_off(LEDS_ALL);
              LOG_INFO("Light OFF\n");
 
@@ -54,6 +56,15 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
 static void light_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
   int length = 0;
   const char* message;
+    /*
+    Ricevi PUT "ON" -> light_on = true
+    Delay di 100ms
+    Ricevi GET -> legge light_on = true -> risponde "ON"
+    Prima invece senza il delay, la GET leggeva il vecchio valore di light_on prima dell'aggiornamento.
+    */
+    // Delay
+    usleep(100000);
+
 
   if (light_on == true){
       length = 2;
