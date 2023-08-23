@@ -97,32 +97,33 @@ public class ActuatorStatus {
 
 
     public String[] getActuatorData(int idLight) throws SQLException {
+            String[] results = new String[2];
+            String select = "SELECT wearLevel, fulminated FROM actuator WHERE idActuator=?";
 
-        String[] results = new String[2];
+            try {
+                Connection conn = db.connDb();
+                PreparedStatement stmt = conn.prepareStatement(select);
+                stmt.setInt(1, idLight);
 
-        String select = "SELECT wearLevel, fulminated FROM actuator WHERE idActuator=?";
+                ResultSet rs = stmt.executeQuery();
+                if (!rs.next()) {
+                    results[0] = "[INFO] - Still no records for this actuator. RETRY!";
+                    results[1] = "";
+                    return results;
+                }
 
-        try {
-            Connection conn = db.connDb();
-            PreparedStatement stmt = conn.prepareStatement(select);
-            stmt.setInt(1, idLight);
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
                 String wearLevel = rs.getString("wearLevel");
                 String fulminated = rs.getString("fulminated");
                 results[0] = wearLevel;
                 results[1] = fulminated;
+
+            } catch (SQLException e) {
+                System.err.println("[FAIL] - Error during reading wearLevel and Fulminated data from DB\n");
+                e.printStackTrace(System.err);
+                e.getMessage();
             }
 
-        } catch (SQLException e) {
-            System.err.println("[FAIL] - Error during reading wearLevel and Fulminated data from DB\n");
-            e.printStackTrace(System.err);
-            e.getMessage();
-        }
-
-        return results;
-
+            return results;
     }
 
     public String getLightStatusFromActuator(int idLight) throws SQLException {
