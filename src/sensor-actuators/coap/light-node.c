@@ -62,7 +62,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 EVENT_RESOURCE(res_wearLevel_observer,
          "title=\"wearLevel observer\";obs",
          res_get_handler_coap_values,
-         res_post_handler,
+         NULL,
          res_post_handler,
          NULL,
          res_event_handler);
@@ -194,7 +194,6 @@ PROCESS_THREAD(wear_controller, ev, data) {
             leds_off(LEDS_RED);  // Spegni il LED rosso
             new_data_received = false;
         }
-        //TODO: PORCO DIO HO RISOLTO IL TIMER
         // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
         //questi nuovi dati resettati devono essere mandati nel java e nel fb
         if (ev == button_hal_release_event) {
@@ -203,7 +202,9 @@ PROCESS_THREAD(wear_controller, ev, data) {
             wear_level = 0;
             LOG_INFO("[OK] - Item replaced\n");
             leds_on(LEDS_BLUE);
-            //questo è per notificare agli osservatori
+            //la chiamata agli observer serve per notificare in automatico il cambiamento che poi dovrebbe essere letto dal
+            //metodo JAVA getWearAndFulminatedFromActuator sintonizzato sull'ip dell'attuatore resettato e con uri puntato
+            //ad actuator/data che è l'indirizzo della risorsa COAP observer.
             res_event_handler();
         }
         PROCESS_YIELD(); // yield periodicamente
