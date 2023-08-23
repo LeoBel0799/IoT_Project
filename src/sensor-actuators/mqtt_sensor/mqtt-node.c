@@ -269,8 +269,13 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             etimer_set(&pub_timer, PUB_PERIOD);
 
         } else if ( state == STATE_DISCONNECTED ){
-            LOG_INFO("[FAIL] - Disconnected form MQTT broker--\n");
-            // Recover from error
+            LOG_INFO("[FAIL] - Disconnected from MQTT broker--\n");
+            LOG_INFO("[INFO] - Trying to reconnect to MQTT broker");
+            mqtt_connect(&conn, broker_address, DEFAULT_BROKER_PORT,
+                        ( DEFAULT_PUBLISH_INTERVAL * 3) / CLOCK_SECOND,
+                        MQTT_CLEAN_SESSION_ON);
+              state = STATE_CONNECTED;
+              etimer_expired(&pub_timer);
         }
 
     }
