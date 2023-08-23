@@ -5,15 +5,15 @@
 #include "contiki.h"
 #include "coap-engine.h"
 #include "dev/leds.h"
-
+#include "sys/ctimer.h"
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "light controller"
 #define LOG_LEVEL LOG_LEVEL_APP
 #define MAX_ARGS 10
 #define ARG_LEN 100
+#define TIME_MS (CLOCK_SECOND * 0.1) // 100ms
 extern uint8_t led;
-
 
 static void light_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -39,6 +39,7 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
             light_on = true;
             LOG_INFO("Light ON\n");
 
+
          }else if (strncmp(command,"OFF",len) == 0){
              light_on = false;
              leds_off(LEDS_ALL);
@@ -56,15 +57,6 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
 static void light_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
   int length = 0;
   const char* message;
-    /*
-    Ricevi PUT "ON" -> light_on = true
-    Delay di 100ms
-    Ricevi GET -> legge light_on = true -> risponde "ON"
-    Prima invece senza il delay, la GET leggeva il vecchio valore di light_on prima dell'aggiornamento.
-    */
-    // Delay
-    usleep(100000);
-
 
   if (light_on == true){
       length = 2;
