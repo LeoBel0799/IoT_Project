@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
-public class RegistrationLightResource extends CoapResource {
+public class ActuatorRegistration extends CoapResource {
     static NodeData node;
 
     static {
@@ -32,7 +32,7 @@ public class RegistrationLightResource extends CoapResource {
     }
 
 
-    public RegistrationLightResource() throws SQLException {
+    public ActuatorRegistration() throws SQLException {
         super("registration");
         setObservable(false);
 

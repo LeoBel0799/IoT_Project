@@ -126,7 +126,7 @@ public class LightBrightStatus {
         String payload = wearLevel + "," + fulminated;
 
         CoapResponse response = coapClient.post(payload, MediaTypeRegistry.TEXT_PLAIN);
-
+        System.out.println("COAP responde per SENDING WEAR LEVEL" + response);
         if(response.isSuccess()) {
             System.out.println("[OK]- Data send successfully");
         } else {

@@ -39,6 +39,7 @@ extern coap_resource_t res_wearLevel_observer;
 
 char *service_url = "/registration";
 static bool registered = false;
+bool new_data_received = false;
 size_t payload_length = 0;  // Lunghezza del payload ricevuto
 bool fulminated = false;    // Flag per indicare se è fulminato
 int wear_level = 0;     // Livello di usura
@@ -86,6 +87,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
             fulminated = (*token == '1');
         }
     }
+    new_data_received=true;
 
 
 }
@@ -183,14 +185,18 @@ PROCESS_THREAD(wear_controller, ev, data) {
 
     while (1) {  // Loop infinito
         // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated
+        if (new_data_received){
             leds_on(LEDS_RED);  // Accendi il LED rosso
             etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
             leds_off(LEDS_RED);  // Spegni il LED rosso
+        }
+        new_data_received = false;
 
         // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
         //questi nuovi dati resettati devono essere mandati nel java e nel fb
         if (ev == button_hal_release_event) {
+            LOG_INFO("[INFO] - BUTTON PRESSED");
             fulminated = false;
             wear_level = 0;
             LOG_INFO("[OK] - Item replaced\n");

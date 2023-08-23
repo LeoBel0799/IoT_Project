@@ -2,20 +2,17 @@ package it.iot.application.coap;
 
 import org.eclipse.californium.core.CoapServer;
 
-import java.net.SocketException;
-import java.sql.SQLException;
 
+public class StartingServer extends CoapServer implements Runnable{
 
-public class RegistrationServer extends CoapServer implements Runnable{
-
-    private static RegistrationServer server;
+    private static StartingServer server;
 
 
     public void createRegistrationServer() {
         try {
             System.out.println("[INFO] - Start registration server ...");
-            server = new RegistrationServer();
-            server.add(new RegistrationLightResource());
+            server = new StartingServer();
+            server.add(new ActuatorRegistration());
             server.start();
             //System.out.println("[INFO] - Registration server started successfully.");
         } catch (Exception e) {
