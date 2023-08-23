@@ -60,11 +60,13 @@ public class LightBrightStatus {
                 String[] parts = responseText.split(",");
 
                 // Il primo elemento è wearLevel
-                float wearLevel = Float.parseFloat(parts[0].substring(9));
+                String wearLevelStr = parts[0];
+                wearLevelStr = wearLevelStr.substring(10);
+                int wearLevel = Integer.parseInt(wearLevelStr);
 
                 // Il secondo elemento è fulminated
-                boolean fulminated = parts[1].substring(11).equals("true");
-                // Imposta i risultati da ritornare
+                String fulStr = parts[1].substring(11);
+                boolean fulminated = fulStr.equals("true");                // Imposta i risultati da ritornare
                 results[0] = String.valueOf(wearLevel);
                 results[1] = String.valueOf(fulminated);
 
@@ -199,7 +201,7 @@ public class LightBrightStatus {
     }
 
     double calculateWearFromCounter(int counter) {
-        return counter * 0.5; //esempio formula
+        return counter;
     }
 
 
