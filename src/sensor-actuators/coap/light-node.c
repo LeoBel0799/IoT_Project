@@ -39,13 +39,13 @@ extern coap_resource_t res_wearLevel_observer;
 
 char *service_url = "/registration";
 static bool registered = false;
-bool new_data_received = false;
+static bool new_data_received = false;
 size_t payload_length = 0;  // Lunghezza del payload ricevuto
 bool fulminated = false;    // Flag per indicare se è fulminato
 int wear_level = 0;     // Livello di usura
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
-
+static struct etimer check_data_timer;
 //dati che sono due processi servono due dichiarazioni e partono con autostart
 PROCESS(light_server, "Car controller");
 PROCESS(wear_controller, "COAP Wear obs");
@@ -184,15 +184,17 @@ PROCESS_THREAD(wear_controller, ev, data) {
     button_hal_init();
 
     while (1) {  // Loop infinito
+          etimer_set(&check_data_timer, CLOCK_SECOND);
+          PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
         // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated
-        if (new_data_received){
+        if (new_data_received == true ){
             leds_on(LEDS_RED);  // Accendi il LED rosso
             etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
             leds_off(LEDS_RED);  // Spegni il LED rosso
+            new_data_received = false;
         }
-        new_data_received = false;
-
+        //TODO: PORCO DIO HO RISOLTO IL TIMER
         // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
         //questi nuovi dati resettati devono essere mandati nel java e nel fb
         if (ev == button_hal_release_event) {
@@ -204,6 +206,7 @@ PROCESS_THREAD(wear_controller, ev, data) {
             //questo è per notificare agli osservatori
             res_event_handler();
         }
+        PROCESS_YIELD(); // yield periodicamente
     }
 
     PROCESS_END();
