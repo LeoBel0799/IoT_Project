@@ -10,20 +10,17 @@ import org.eclipse.californium.elements.exception.ConnectorException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class UserMenu implements Runnable {
 
-
+    final int EXIT = 1;
     final int OPTION_TURN_ON_LIGHT = 2;
     final int OPTION_TURN_ON_BRIGHT = 3;
     final int SHOW_MOTION = 4;
     final int SHOW_NODES = 5;
     final int SHOW_ACTUATORS = 6;
-    private Scanner input;
+    private static Scanner input;
     static LightData lightData;
     static NodeData nodeData;
     static ActuatorStatus actuatorStatus;
@@ -65,7 +62,7 @@ public class UserMenu implements Runnable {
             System.out.println("+++++++++++++++++++++++++++++++++");
             System.out.println("         Car Controller  (User)  ");
             System.out.println("+++++++++++++++++++++++++++++++++");
-            System.out.println("(1) Exit controller (Press 0 to Exit)");
+            System.out.println("(1) Exit controller");
             System.out.println("(2) Handle Lights");
             System.out.println("(3) Handle Brights");
             System.out.println("(4) View Node records");
@@ -76,7 +73,6 @@ public class UserMenu implements Runnable {
 
             switch (choice) {
                 case OPTION_TURN_ON_LIGHT:
-                    System.out.println("STAI MODIFICANDO A LUCE");
                     int lightId = askForLightId();
                     PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
                     lights.setLight();
@@ -99,13 +95,11 @@ public class UserMenu implements Runnable {
                     In sintesi, Java e C si scambiano i dati su wearLevel e fulminated tramite richieste CoAP. Java decide le azioni da intraprendere e salva lo storico nel DB. C mantiene i valori correnti in memoria e li notifica a Java quando cambiano.
                     */
                     //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
-                    //TODO: Registrazione attuatori coap avviene con successo ma nel db viene messo solo uno (due volte) e il secondo no
-                    //TODO: vedere se i metodi di visualizzazione dei dati nel menu funzionano
-
                     break;
 
 
                 case OPTION_TURN_ON_BRIGHT:
+                    //TODO: TESTARE BRIGHT
                    // brights
                     int brightId = askForLightId();
                     PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
@@ -113,6 +107,7 @@ public class UserMenu implements Runnable {
                     break;
 
                 case SHOW_MOTION:
+                    //TODO: TESTARE
                     List<String> motions = lightData.selectAllMotion();
                     for(String row : motions) {
                         System.out.println(row);
@@ -120,6 +115,7 @@ public class UserMenu implements Runnable {
                     break;
 
                 case SHOW_ACTUATORS:
+                    //TODO: TESTARE
                     List<String> actuators = actuatorStatus.selectAllActuatorStatus();
                     for (String row: actuators){
                         System.out.println(row);
@@ -127,14 +123,18 @@ public class UserMenu implements Runnable {
                     break;
 
                 case SHOW_NODES:
+                    //TODO: TESTARE
                     List<String> nodes = nodeData.selectAllNode();
                     for (String row: nodes){
                         System.out.println(row);
                     }
                     break;
 
-                case 1:
+                case EXIT:
+                    //VERIFICATO FUNGE
+                    System.out.println("BYE");
                     shouldExit = true;
+                    System.exit(0);
                     break;
 
 
@@ -148,7 +148,7 @@ public class UserMenu implements Runnable {
 
 
 
-    int askForLightId() {
+    public static int askForLightId() {
 
         int id;
 
@@ -167,7 +167,7 @@ public class UserMenu implements Runnable {
 
     }
 
-    boolean isValidLightId(int id) {
+    static boolean isValidLightId(int id) {
         return id >= 1 && id <=2;
     }
 
