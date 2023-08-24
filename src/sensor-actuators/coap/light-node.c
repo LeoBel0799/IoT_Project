@@ -42,7 +42,8 @@ static bool registered = false;
 static bool new_data_received = false;
 size_t payload_length = 0;  // Lunghezza del payload ricevuto
 bool fulminated = false;    // Flag per indicare se è fulminato
-int wear_level = 0;     // Livello di usura
+float wear_level = 0.0;     // Livello di usura
+int counter = 0;
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
 static struct etimer check_data_timer;
@@ -57,15 +58,15 @@ AUTOSTART_PROCESSES(&light_server,&wear_controller);
 static void res_event_handler(void);
 static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
-
+static void res_event_trigger();
 
 EVENT_RESOURCE(res_wearLevel_observer,
-         "title=\"wearLevel observer\";obs",
+         "title=\"wearLevel observer\"",
          res_get_handler_coap_values,
          NULL,
          res_post_handler,
          NULL,
-         res_event_handler);
+         res_event_trigger);
 
 // Funzione di gestione della richiesta POST CoAP
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
@@ -76,7 +77,6 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
     memcpy(payload_str, payload, payload_length);
     payload_str[payload_length] = '\0';
 
-    // Tokenizza la stringa
     char* token = strtok(payload_str, ",");
     if (token != NULL) {
         wear_level = atof(token);
@@ -85,6 +85,12 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
         token = strtok(NULL, ",");
         if (token != NULL) {
             fulminated = (*token == '1');
+
+            // Leggi terzo valore e converte in int
+            token = strtok(NULL, ",");
+            if (token != NULL) {
+                counter = atoi(token);
+            }
         }
     }
     new_data_received=true;
@@ -94,16 +100,18 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 
 static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     char response_payload[64];
-    int length = snprintf(response_payload, sizeof(response_payload), "wearLevel=%.2d,fulminated=%s",
-                          wear_level, fulminated ? "true" : "false");
+    int length = snprintf(response_payload, sizeof(response_payload), "%.2d,%s,%d",
+                          wear_level, fulminated ? "true" : "false",counter);
 
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_payload(response, response_payload, length);
 }
 
 
-static void res_event_handler(void){
-	coap_notify_observers(&res_wearLevel_observer);
+static void res_event_trigger() {
+            fulminated = false;
+            wear_level = 0;
+            counter = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -186,7 +194,7 @@ PROCESS_THREAD(wear_controller, ev, data) {
     while (1) {  // Loop infinito
           etimer_set(&check_data_timer, CLOCK_SECOND);
           PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
-        // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated
+        // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated e counter
         if (new_data_received == true ){
             leds_on(LEDS_RED);  // Accendi il LED rosso
             etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
@@ -198,15 +206,20 @@ PROCESS_THREAD(wear_controller, ev, data) {
         //questi nuovi dati resettati devono essere mandati nel java e nel fb
         if (ev == button_hal_release_event) {
             LOG_INFO("[INFO] - BUTTON PRESSED");
-            fulminated = false;
-            wear_level = 0;
+            res_event_trigger();
             LOG_INFO("[OK] - Item replaced\n");
             leds_on(LEDS_BLUE);
+            etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
+            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
+            leds_off(LEDS_BLUE);  // Spegni il LED rosso
+            res_wearLevel_observer.trigger();
+            break;
+
             //la chiamata agli observer serve per notificare in automatico il cambiamento che poi dovrebbe essere letto dal
             //metodo JAVA getWearAndFulminatedFromActuator sintonizzato sull'ip dell'attuatore resettato e con uri puntato
             //ad actuator/data che è l'indirizzo della risorsa COAP observer.
-            res_event_handler();
         }
+
         PROCESS_YIELD(); // yield periodicamente
     }
 
