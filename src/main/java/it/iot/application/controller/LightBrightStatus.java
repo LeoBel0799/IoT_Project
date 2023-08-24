@@ -79,9 +79,10 @@ public class LightBrightStatus {
         }
     }
 
-
+    //TODO: METTERE IL COMANDO DOPO IL ? A TUTTI GLI URI DI TUTTI I METODI CHE STANNO SOTTO PERCHèL A FUNZIONE
+    //      COAP GET QUERY VARIABLE LO RICHIEDE PER POTRER FARE L'AZIONE SUL SENSORE
     public void putLightsOn(String ip, String order) {
-        String uri = "coap://[" + ip + "]/actuator/lights";
+        String uri = "coap://[" + ip + "]/actuator/lights?command=ON";
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
@@ -101,7 +102,7 @@ public class LightBrightStatus {
     }
 
     public void putLightsOff(String ip, String order) {
-        String uri = "coap://[" + ip + "]/actuator/lights";
+        String uri = "coap://[" + ip + "]/actuator/lights?command=OFF";
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
