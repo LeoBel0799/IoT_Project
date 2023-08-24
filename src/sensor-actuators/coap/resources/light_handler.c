@@ -34,7 +34,7 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
     uint8_t led = 0;
     int success =1;
     if((len = coap_get_query_variable(request, "command", &command))){
-        LOG_DBG("Command %.*s\n", (int)len, command);
+        LOG_DBG("Command %.*s - WAIT!\n", (int)len, command);
         // Spengo la luce
         if(strncmp(command, "OFF", len) == 0){
             led = LEDS_RED;
