@@ -132,11 +132,12 @@ public class LightData {
 
             while(rs.next()) {
                 String row = " ";
-                row += "IdLights: " + rs.getInt("idlights");
+                row += "IdLights: " + rs.getInt("idlight");
                 row += ", Counter: " + rs.getString("counter");
                 row += ", Lights: " + rs.getString("lights");
                 row += ", LightsDegree: " + rs.getInt("lightsDegree");
                 row += ", Brights: " + rs.getString("brights");
+                row += ", Time:" + rs.getString("created_at");
                 rows.add(row);
             }
         } catch(SQLException e) {

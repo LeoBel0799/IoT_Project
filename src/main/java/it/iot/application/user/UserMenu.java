@@ -17,9 +17,10 @@ public class UserMenu implements Runnable {
     final int EXIT = 1;
     final int OPTION_TURN_ON_LIGHT = 2;
     final int OPTION_TURN_ON_BRIGHT = 3;
-    final int SHOW_MOTION = 4;
-    final int SHOW_NODES = 5;
-    final int SHOW_ACTUATORS = 6;
+    final int SHOW_NODES = 4;
+    final int SHOW_ACTUATORS = 5;
+    final int SHOW_MOTION = 6;
+
     private static Scanner input;
     static LightData lightData;
     static NodeData nodeData;
@@ -55,24 +56,33 @@ public class UserMenu implements Runnable {
             throwables.printStackTrace();
         }
     }
+
+
+
+    public void showMenu(){
+        System.out.println("+++++++++++++++++++++++++++++++++");
+        System.out.println("         Car Controller  (User)  ");
+        System.out.println("+++++++++++++++++++++++++++++++++");
+        System.out.println("(1) Exit controller");
+        System.out.println("(2) Handle Lights");
+        System.out.println("(3) Handle Brights");
+        System.out.println("(4) View Node records");
+        System.out.println("(5) View Actuator records");
+        System.out.println("(6) View Light status records");
+        System.out.println("Insert a command: ");
+    }
+
+
     public void menu() throws ConnectorException, IOException, InterruptedException, SQLException {
         boolean shouldExit = false;
         Scanner input = new Scanner(System.in);
         while (!shouldExit){
-            System.out.println("+++++++++++++++++++++++++++++++++");
-            System.out.println("         Car Controller  (User)  ");
-            System.out.println("+++++++++++++++++++++++++++++++++");
-            System.out.println("(1) Exit controller");
-            System.out.println("(2) Handle Lights");
-            System.out.println("(3) Handle Brights");
-            System.out.println("(4) View Node records");
-            System.out.println("(5) View Actuator records");
-            System.out.println("(6) View Light status records");
-            System.out.println("Insert a command: ");
-            int choice = input.nextInt();
-
-            switch (choice) {
-                case OPTION_TURN_ON_LIGHT:
+            showMenu();
+            //TESTATO TRY CATCH PER INPUTMISMATCH E FUNGE
+            try{
+                int choice = input.nextInt();
+                switch (choice) {
+                    case OPTION_TURN_ON_LIGHT:
                     /*TODO: QUALSIASI SIA IL COMANDO NELLA PUT. DA COAP ARRIVA SEMPRE OFF.
                             PROBOBABILE NON CORRETTA LETTURA DOVUTO ALLA GET ISTANTANEA DOPO LA PUT
                             NEL LIGHT HANDLER.C STO PROVANDO AD INSERIRE UN DELAY APPOSITO PER RITARDARE LA LETTURA
@@ -80,9 +90,9 @@ public class UserMenu implements Runnable {
                             QUINDI VUOL DIRE TESTARE LA RES POST HANLDER E SE POI VIENE ATTIVATO IL THREAD PER IL RESET TRAMITE BOTTONE
                     */
 
-                    int lightId = askForLightId();
-                    PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
-                    lights.setLight();
+                        int lightId = askForLightId();
+                        PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
+                        lights.setLight();
                     /*
                     SPIEGAZIONE DI COME è STATO IMPLMENTATO OBS, CON RELATIVO CAMBIO AUTOMATICO DEI VALORI SOTTO PRESSIONE DI UN BOTTONE
                     Lato Java:
@@ -101,53 +111,73 @@ public class UserMenu implements Runnable {
                     Se viene premuto il pulsante, wearLevel e fulminated vengono resettati e la risorsa notifica Java tramite una osservazione CoAP.
                     In sintesi, Java e C si scambiano i dati su wearLevel e fulminated tramite richieste CoAP. Java decide le azioni da intraprendere e salva lo storico nel DB. C mantiene i valori correnti in memoria e li notifica a Java quando cambiano.
                     */
-                    //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
-                    break;
+                        //Per capire i dati se arrivano e come arrivano apriti una finestra con sql dove fai select* su tutte e tre le tabelle ogni tot di secondi cos' vedi gli inserimenti
+                        break;
 
 
-                case OPTION_TURN_ON_BRIGHT:
-                    //TODO: TESTARE BRIGHT
-                   // brights
-                    int brightId = askForLightId();
-                    PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
-                    brights.setBright(brightId);
-                    break;
+                    case OPTION_TURN_ON_BRIGHT:
+                        //TODO: TESTARE BRIGHT
+                        int brightId = askForLightId();
+                        PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
+                        brights.setBright(brightId);
+                        break;
 
-                case SHOW_MOTION:
-                    //TODO: TESTARE
-                    List<String> motions = lightData.selectAllMotion();
-                    for(String row : motions) {
-                        System.out.println(row);
-                    }
-                    break;
+                    case SHOW_MOTION:
+                        //VERIFICATO FUNGE
+                        List<String> motions = lightData.selectAllMotion();
+                        if(motions.isEmpty()) {
+                            System.out.println("[INFO] - No Light status records found. Try again in a few!");
+                        } else {
+                            System.out.println("\n *************LIGHT STATUS RECORDS*************");
+                            for(String row : motions) {
+                                System.out.println(row);
+                            }
+                        }
+                        break;
 
-                case SHOW_ACTUATORS:
-                    //TODO: TESTARE
-                    List<String> actuators = actuatorStatus.selectAllActuatorStatus();
-                    for (String row: actuators){
-                        System.out.println(row);
-                    }
-                    break;
+                    case SHOW_ACTUATORS:
+                        //VERIFICATO FUNGE
+                        List<String> actuators = actuatorStatus.selectAllActuatorStatus();
+                        if(actuators.isEmpty()){
+                            System.out.println("[INFO] - No records about Actuator actions found. Try again after some transactions on Lights!");
+                        } else {
+                            System.out.println("\n *************ACTIONS ON LIGHTS WITH ACTUATORS*************");
+                            for (String row: actuators){
+                                System.out.println(row);
+                            }
+                        }
+                        break;
 
-                case SHOW_NODES:
-                    //TODO: TESTARE
-                    List<String> nodes = nodeData.selectAllNode();
-                    for (String row: nodes){
-                        System.out.println(row);
-                    }
-                    break;
+                    case SHOW_NODES:
+                        //VERIFICATO FUNGE
+                        List<String> nodes = nodeData.selectAllNode();
+                        if (nodes.isEmpty()){
+                            System.out.println("[INFO] - No Acutators records found. Try again in a few!");
 
-                case EXIT:
-                    //VERIFICATO FUNGE
-                    System.out.println("BYE");
-                    shouldExit = true;
-                    System.exit(0);
-                    break;
+                        }else {
+                            System.out.println("\n *************ACTUATORS RECORDS*************");
+                            for (String row: nodes){
+                                System.out.println(row);
+                            }
+                        }
+
+                        break;
+
+                    case EXIT:
+                        //VERIFICATO FUNGE
+                        System.out.println("BYE");
+                        shouldExit = true;
+                        System.exit(0);
+                        break;
 
 
-                default:
-                    System.out.println("Invalid option");
-                    input.nextLine();//svoto buffer
+                    default:
+                        System.out.println("[FAIL] - Invalid option");
+                        input.nextLine();//svoto buffer
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("[FAIL] - Insert numbers not characters");
+                input.nextLine();
             }
         }
     }
@@ -156,22 +186,24 @@ public class UserMenu implements Runnable {
 
 
     public static int askForLightId() {
-
         int id;
-
         while(true) {
-            System.out.print("Insert light id (1-2): ");
-            id = input.nextInt();
-
-            if(isValidLightId(id)) {
-                break;
-            } else {
-                System.out.println("Invalid light id. Please retry.");
+            //VERIFICATO FUNGE
+            try {
+                System.out.print("Insert light id (1-2): ");
+                id = input.nextInt();
+                if(isValidLightId(id)) {
+                    break;
+                } else {
+                    System.out.println("[INFO] - Invalid light id. Please retry.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("[FAIL] - Insert numbers not characters");
+                input.nextLine();
             }
+
         }
-
         return id;
-
     }
 
     static boolean isValidLightId(int id) {

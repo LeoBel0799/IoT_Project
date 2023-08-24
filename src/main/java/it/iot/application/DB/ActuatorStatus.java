@@ -21,7 +21,8 @@ public class ActuatorStatus {
                 "light VARCHAR(10), " +
                 "bright VARCHAR(10)," +
                 "wearLevel INTEGER, "+
-                "fulminated VARCHAR(10)"+
+                "fulminated VARCHAR(10),"+
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"+
                 ");";
         try {
             Connection conn = db.connDb();
@@ -83,6 +84,7 @@ public class ActuatorStatus {
                 row += ", Brights: " + rs.getString("bright");
                 row += ", Wear Level: " + rs.getInt("wearLevel");
                 row += ", Fulminated: " + rs.getString("fulminated");
+                row += ", Time:" + rs.getString("created_at");
                 rows.add(row);
             }
         } catch(SQLException e) {
@@ -98,7 +100,7 @@ public class ActuatorStatus {
 
     public String[] getActuatorData(int idLight) throws SQLException {
             String[] results = new String[2];
-            String select = "SELECT wearLevel, fulminated FROM actuator WHERE idActuator=?";
+            String select = "SELECT wearLevel, fulminated FROM actuator WHERE idActuator=? ORDER BY created_at DESC LIMIT 1";
 
             try {
                 Connection conn = db.connDb();
@@ -130,7 +132,7 @@ public class ActuatorStatus {
 
         String lightStatus = null;
 
-        String select = "SELECT light FROM actuator WHERE idActuator=?";
+        String select = "SELECT light FROM actuator WHERE idActuator=? ORDER BY created_at DESC LIMIT 1";
 
         try {
 
