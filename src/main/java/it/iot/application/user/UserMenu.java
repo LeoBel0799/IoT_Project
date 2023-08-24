@@ -77,6 +77,7 @@ public class UserMenu implements Runnable {
     public void menu() throws ConnectorException, IOException, InterruptedException, SQLException {
         boolean shouldExit = false;
         Scanner input = new Scanner(System.in);
+        boolean optionOneExecuted = false; // Inizializza la variabile all'inizio del loop
         while (!shouldExit){
             showMenu();
             //TESTATO TRY CATCH PER INPUTMISMATCH E FUNGE
@@ -112,17 +113,22 @@ public class UserMenu implements Runnable {
                         } else {
                             System.out.println("[INFO] - No Light status records with ID: " + lightId + ", still arrived!");
                         }
+                        optionOneExecuted = true;
                         break;
 
 
                     case OPTION_TURN_ON_BRIGHT:
                         //TODO: TESTARE BRIGHT
-                        int brightId = askForLightId();
-                        if (lightData.lightExists(brightId)){
-                            PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
-                            brights.setBright(brightId);
-                        }else{
-                            System.out.println("[INFO] - No Light status records with ID: " + brightId + ", still arrived!");
+                        if (optionOneExecuted) {
+                            int brightId = askForLightId();
+                            if (lightData.lightExists(brightId)) {
+                                PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus, nodeData);
+                                brights.setBright(brightId);
+                            } else {
+                                System.out.println("[INFO] - No Light status records with ID: " + brightId + ", still arrived!");
+                            }
+                        } else {
+                            System.out.println("[INFO] - Option one must be executed first to turn on at least on light!");
                         }
                         break;
 
