@@ -1,5 +1,6 @@
 package it.iot.application.controller;
 
+import it.iot.application.DB.ActuatorStatus;
 import it.iot.application.DB.LightData;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
@@ -12,7 +13,7 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 
 public class LightBrightStatus {
-    LightData light = new LightData();
+    ActuatorStatus actuator  = new ActuatorStatus();
     private static LightBrightStatus instance = null;
 
     public LightBrightStatus() throws ConnectorException, IOException {
@@ -58,18 +59,19 @@ public class LightBrightStatus {
                 return null;
             } else {
                 String[] parts = responseText.split(",");
-
                 // Il primo elemento è wearLevel
                 String wearLevelStr = parts[0];
-                wearLevelStr = wearLevelStr.substring(10);
-                int wearLevel = Integer.parseInt(wearLevelStr);
-
+                double wearLevel = Double.parseDouble(wearLevelStr);
                 // Il secondo elemento è fulminated
-                String fulStr = parts[1].substring(11);
-                boolean fulminated = fulStr.equals("true");                // Imposta i risultati da ritornare
+                String fulStr = parts[1];
+                boolean fulminated = Boolean.parseBoolean(fulStr);
+                // Il terzo elemento è counter
+                String counterStr = parts[2];
+                int counter = Integer.parseInt(counterStr);
+                // Imposta i risultati da ritornare
                 results[0] = String.valueOf(wearLevel);
                 results[1] = String.valueOf(fulminated);
-
+                results[2] = String.valueOf(counter);
                 return results;
             }
         } else {
@@ -79,8 +81,7 @@ public class LightBrightStatus {
         }
     }
 
-    //TODO: METTERE IL COMANDO DOPO IL ? A TUTTI GLI URI DI TUTTI I METODI CHE STANNO SOTTO PERCHèL A FUNZIONE
-    //      COAP GET QUERY VARIABLE LO RICHIEDE PER POTRER FARE L'AZIONE SUL SENSORE
+
     public void putLightsOn(String ip, String order) {
         String uri = "coap://[" + ip + "]/actuator/lights?command=ON";
         CoapClient coapClient = new CoapClient(uri);
@@ -122,11 +123,11 @@ public class LightBrightStatus {
     }
 
 
-    public void sendWearLevel(String ip, String wearLevel, String fulminated) throws ConnectorException, IOException {
+    public void sendWearLevel(String ip, Double wearLevel, boolean fulminated, int counter) throws ConnectorException, IOException {
         String uri = "coap://[" + ip + "]/actuator/data";
         CoapClient coapClient = new CoapClient(uri);
         // crea payload
-        String payload = wearLevel + "," + fulminated;
+        String payload = wearLevel + "," + fulminated + "," + counter;
 
         CoapResponse response = coapClient.post(payload, MediaTypeRegistry.TEXT_PLAIN);
         System.out.println("COAP responde per SENDING WEAR LEVEL" + response);
@@ -164,7 +165,7 @@ public class LightBrightStatus {
 
 
     public void putBrightsOn(String ip, String order) {
-        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights");
+        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?command=ON");
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
             System.out.println(" +  " + order);
@@ -183,7 +184,7 @@ public class LightBrightStatus {
     }
 
     public void putBrightsOff(String ip, String order) {
-        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights");
+        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?command=OFF");
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
             System.out.println(" +  " + order);
@@ -206,8 +207,8 @@ public class LightBrightStatus {
     }
 
 
-    public Double getWearLevel(int lightId) {
-        int counter = light.getCounterForLight(lightId);
+    public Double getWearLevel(int idActuator) {
+        int counter = actuator.getCounterForActuator(idActuator);
         double wearLevel = calculateWearFromCounter(counter);
         return wearLevel;
     }
