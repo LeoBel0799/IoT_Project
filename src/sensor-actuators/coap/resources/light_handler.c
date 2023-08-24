@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
+
 #include "contiki.h"
 #include "coap-engine.h"
 #include "os/dev/leds.h"
@@ -32,45 +33,30 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
     const char *command = NULL;
     uint8_t led = 0;
     int success =1;
-
-    if((len = coap_get_query_variable(request, "command", &command)))
-    {
+    if((len = coap_get_query_variable(request, "command", &command))){
         LOG_DBG("Command %.*s\n", (int)len, command);
-
         // Spengo la luce
-        if(strncmp(command, "OFF", len) == 0)
-        {
+        if(strncmp(command, "OFF", len) == 0){
             led = LEDS_RED;
             light_on = 0;
-        }
-
-        // Accendo la luce
-        else if(strncmp(command, "ON", len) == 0)
-        {
-            led = LEDS_YELLOW;
+            LOG_INFO("[OK] - Light OFF");
+        }else if(strncmp(command, "ON", len) == 0){
+            led = LEDS_BLUE;
             light_on = 1;
-        }
-    else
-    {
-      success = 0;
+            LOG_INFO("[OK] - Light ON");
+        }else{
+      coap_set_status_code(response, BAD_REQUEST_4_00);
     }
-  }
-  else
-  {
-    success = 0;
-  }
-
-
-  if(!success) {
+  }else{
     coap_set_status_code(response, BAD_REQUEST_4_00);
   }
-  else
-  {
-    coap_set_status_code(response, CONTENT_2_05);
 
+  if(success) {
+    coap_set_status_code(response, CONTENT_2_05);
     leds_off(LEDS_ALL);
     leds_on(led);
   }
+
 }
 
 
@@ -94,6 +80,3 @@ static void light_get_handler(coap_message_t *request, coap_message_t *response,
   coap_set_header_etag(response, (uint8_t *)&length, 1);
   coap_set_payload(response, buffer, length);
 }
-/*
-static void res_trigger(){
-}*/

@@ -240,7 +240,7 @@ PROCESS_THREAD(light_server, ev, data){
 	}
 
 	while(!registered) {
-		//qui mi genero l'id che simboleggia gli attuatori delle luci (va da 1 a 4)
+		//qui mi genero l'id che simboleggia gli attuatori delle luci (va da 1 a 2)
 
         next_id = next_id + 1;
         uint16_t node_id = next_id ;

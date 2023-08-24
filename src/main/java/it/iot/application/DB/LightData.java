@@ -94,6 +94,34 @@ public class LightData {
         return lightStatus;
     }
 
+    public boolean lightExists(int lightId) {
+
+        boolean exists = false;
+
+        try {
+            Connection conn = DB.connDb();
+            String sql = "SELECT COUNT(*) AS count FROM motion WHERE idlight = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, lightId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()) {
+                int count = rs.getInt("count");
+                if(count > 0) {
+                    exists = true;
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error checking if light exists");
+            e.printStackTrace();
+        }
+
+        return exists;
+
+    }
+
     public int getCounterForLight(int lightId) {
 
         int counter = 0;
