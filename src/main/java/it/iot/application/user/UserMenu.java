@@ -84,8 +84,14 @@ public class UserMenu implements Runnable {
                 switch (choice) {
                     case OPTION_TURN_ON_LIGHT:
                         int lightId = askForLightId();
-                        PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
-                        lights.setLight();
+                        if (lightData.lightExists(lightId)){
+                            PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
+                            lights.setLight();
+                        }else{
+                            System.out.println("[INFO] - No Light status records with ID: " + lightId + ", still arrived!");
+                        }
+
+
                     /*
                     SPIEGAZIONE DI COME è STATO IMPLMENTATO OBS, CON RELATIVO CAMBIO AUTOMATICO DEI VALORI SOTTO PRESSIONE DI UN BOTTONE
                     Lato Java:
@@ -111,8 +117,12 @@ public class UserMenu implements Runnable {
                     case OPTION_TURN_ON_BRIGHT:
                         //TODO: TESTARE BRIGHT
                         int brightId = askForLightId();
-                        PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
-                        brights.setBright(brightId);
+                        if (lightData.lightExists(brightId)){
+                            PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus,  nodeData );
+                            brights.setBright(brightId);
+                        }else{
+                            System.out.println("[INFO] - No Light status records with ID: " + brightId + ", still arrived!");
+                        }
                         break;
 
                     case SHOW_MOTION:

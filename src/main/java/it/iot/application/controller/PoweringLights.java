@@ -114,21 +114,21 @@ public class PoweringLights  {
         //    callResetForLight(true, light);
         //}else{
             System.out.println("wear level ricevuto: " + wearLevelreceived);
-            String res;
+            String command;
             String status = lightData.getLightStatus(light);
             System.out.println("status: " + status);
             System.out.println("fulminated: " + false);
 
             if (status.equals("ON")) {
-                res = "{\"OFF\"}";
+                command = "OFF";
                 System.out.println("[INFO] - Sending PUT request (OFF) to Lights");
-                coapClient.putLightsOff(address, res);
+                coapClient.putLightsOff(address, command);
             } else if (fulminated == true) {
                 System.out.println("[INFO] - Cannot turn on lights, it's gone!");
             } else if (status.equals("OFF")) {
-                res =  "{\"ON\"}";
+                command =  "ON";
                 System.out.println("[INFO] - Sending PUT request (ON) to Lights");
-                coapClient.putLightsOn(address, res);
+                coapClient.putLightsOn(address, command);
             }
             try {
                 String newStatus = coapClient.getLightsOnOff(address);
