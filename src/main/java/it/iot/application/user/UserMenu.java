@@ -83,13 +83,6 @@ public class UserMenu implements Runnable {
                 int choice = input.nextInt();
                 switch (choice) {
                     case OPTION_TURN_ON_LIGHT:
-                    /*TODO: QUALSIASI SIA IL COMANDO NELLA PUT. DA COAP ARRIVA SEMPRE OFF.
-                            PROBOBABILE NON CORRETTA LETTURA DOVUTO ALLA GET ISTANTANEA DOPO LA PUT
-                            NEL LIGHT HANDLER.C STO PROVANDO AD INSERIRE UN DELAY APPOSITO PER RITARDARE LA LETTURA
-                            I LED NON SI ACCENDONO NELLA PUT + TESTARE IL FUNZIONAMENTO DI QUANDO SI VA NEL CASO DELLA LUCE FULMINATA
-                            QUINDI VUOL DIRE TESTARE LA RES POST HANLDER E SE POI VIENE ATTIVATO IL THREAD PER IL RESET TRAMITE BOTTONE
-                    */
-
                         int lightId = askForLightId();
                         PoweringLights lights = new PoweringLights(lightId, lightData, nodeData, actuatorStatus);
                         lights.setLight();
