@@ -4,7 +4,7 @@
 
 #include "contiki.h"
 #include "coap-engine.h"
-#include "dev/leds.h"
+#include "os/dev/leds.h"
 #include "sys/ctimer.h"
 /* Log configuration */
 #include "sys/log.h"
@@ -13,7 +13,6 @@
 #define MAX_ARGS 10
 #define ARG_LEN 100
 #define TIME_MS (CLOCK_SECOND * 0.1) // 100ms
-extern uint8_t led;
 
 static void light_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -25,43 +24,64 @@ RESOURCE(res_light_controller,
          light_put_handler,
          NULL);
 
-bool light_on = false;
+static int light_on = 0; //0 spento- 1 acceso
 
 
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     size_t len = 0;
     const char *command = NULL;
+    uint8_t led = 0;
+    int success =1;
 
-     if((len = coap_get_query_variable(request, "command", &command))){
-         LOG_DBG("Command received is %.*s\n", (int)len, command);
-         if(strncmp(command, "ON", len) == 0){
-            leds_on(LEDS_BLUE);
-            light_on = true;
-            LOG_INFO("Light ON\n");
+    if((len = coap_get_query_variable(request, "command", &command)))
+    {
+        LOG_DBG("Command %.*s\n", (int)len, command);
+
+        // Spengo la luce
+        if(strncmp(command, "OFF", len) == 0)
+        {
+            led = LEDS_RED;
+            light_on = 0;
+        }
+
+        // Accendo la luce
+        else if(strncmp(command, "ON", len) == 0)
+        {
+            led = LEDS_YELLOW;
+            light_on = 1;
+        }
+    else
+    {
+      success = 0;
+    }
+  }
+  else
+  {
+    success = 0;
+  }
 
 
-         }else if (strncmp(command,"OFF",len) == 0){
-             light_on = false;
-             leds_off(LEDS_ALL);
-             LOG_INFO("Light OFF\n");
+  if(!success) {
+    coap_set_status_code(response, BAD_REQUEST_4_00);
+  }
+  else
+  {
+    coap_set_status_code(response, CONTENT_2_05);
 
-         }else{
-            goto error;
-         }
-         	return;
-         error:
-         	coap_set_status_code(response, BAD_REQUEST_4_00);
-     }
+    leds_off(LEDS_ALL);
+    leds_on(led);
+  }
 }
+
 
 static void light_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
   int length = 0;
   const char* message;
 
-  if (light_on == true){
+  if (light_on == 1){
       length = 2;
       message = "ON";
-  } else if (light_on == false){
+  } else if (light_on == 0){
        length= 3;
        message = "OFF";
   } else {
@@ -74,3 +94,6 @@ static void light_get_handler(coap_message_t *request, coap_message_t *response,
   coap_set_header_etag(response, (uint8_t *)&length, 1);
   coap_set_payload(response, buffer, length);
 }
+/*
+static void res_trigger(){
+}*/

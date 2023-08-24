@@ -4,7 +4,7 @@
 
 #include "contiki.h"
 #include "coap-engine.h"
-#include "dev/leds.h"
+#include "os/dev/leds.h"
 #include "coap-blocking-api.h"
 #include "coap-observe.h"
 #include "coap-separate.h"
@@ -14,7 +14,7 @@
 #include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip-debug.h"
 #include "routing/routing.h"
-#include "dev/button-hal.h"
+#include "os/dev/button-hal.h"
 
 #define SERVER_EP "coap://[fd00::1]:5683"
 #define CONNECTION_TRY_INTERVAL 1
