@@ -26,6 +26,7 @@ public class LightData {
                 "lights VARCHAR(5), " +
                 "lightsDegree INTEGER, " +
                 "brights VARCHAR(5),"+
+                "bootstrapped VARCHAR(5),"+
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"+
                 ");";
         try {
@@ -50,8 +51,8 @@ public class LightData {
         }
     }
 
-    public void insertMotionData(int idlight, String lights, int lights_degree, String brights) throws SQLException {
-        String insert = "INSERT INTO motion (idlight,counter,lights,lightsDegree,brights) VALUES (?,?,?,?,?)";
+    public void insertMotionData(int idlight, String lights, int lights_degree, String brights, Boolean bootstrapped) throws SQLException {
+        String insert = "INSERT INTO motion (idlight,counter,lights,lightsDegree,brights,bootstrapped) VALUES (?,?,?,?,?,?)";
 
         //System.out.println("[INFO] - Inserting  Light record in DB");
         int count = lightCounters.getOrDefault(idlight, 0) + 1;
@@ -65,6 +66,7 @@ public class LightData {
             stmt.setString(3, lights);
             stmt.setInt(4, lights_degree);
             stmt.setString(5, brights);
+            stmt.setBoolean(6,bootstrapped);
             stmt.executeUpdate();
             //System.out.println("[OK] - Light Data record inserted into DB");
 
@@ -75,78 +77,78 @@ public class LightData {
         }
     }
 
-    public String getLightStatus(int lightId) {
+    public String getLightStatus(int lightId) throws SQLException {
         String lightStatus = null;
-        try {
-            Connection conn = DB.connDb();
-            String sql = "SELECT lights FROM motion WHERE idlight=? ORDER BY created_at DESC LIMIT 1";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, lightId);
-            ResultSet rs = stmt.executeQuery();
+        Connection conn = DB.connDb();
+        String sql = "SELECT lights FROM motion WHERE idlight=? ORDER BY created_at DESC LIMIT 1";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, lightId);
+        ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 lightStatus = rs.getString("lights");
             }
-        } catch (SQLException e) {
-            System.err.println("[FAIL] - Error during reading Light status data from DB");
-            e.printStackTrace(System.err);
-            e.getMessage();
-        }
         return lightStatus;
     }
 
-    public boolean lightExists(int lightId) {
 
-        boolean exists = false;
-
-        try {
-            Connection conn = DB.connDb();
-            String sql = "SELECT COUNT(*) AS count FROM motion WHERE idlight = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, lightId);
-
-            ResultSet rs = stmt.executeQuery();
-
-            if(rs.next()) {
-                int count = rs.getInt("count");
-                if(count > 0) {
-                    exists = true;
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error checking if light exists");
-            e.printStackTrace();
-        }
-
-        return exists;
+    public void setBootstrappedStatus(int idlight, boolean bootstrapped) throws SQLException {
+        Connection conn = DB.connDb();
+        String update = "UPDATE motion SET bootstrapped = ? WHERE idlight = ?";
+        PreparedStatement stmt = conn.prepareStatement(update);
+        stmt.setBoolean(1, bootstrapped);
+        stmt.setInt(2, idlight);
+        stmt.executeUpdate();
+        System.out.println("[OK] - Bootstrapped status updated in Motion table");
 
     }
 
-    public int getCounterForLight(int lightId) {
 
-        int counter = 0;
-        try {
-            Connection conn = DB.connDb();
-            // Query per ottenere il contatore
-            String sql = "SELECT MAX(counter) AS counter FROM motion WHERE idlight = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, lightId);
+    public Boolean getBootstrappedStatus(int idlight) throws SQLException {
+        String select = "SELECT bootstrapped FROM motion WHERE idlight = ? AND bootstrapped = true ORDER BY counter DESC LIMIT 1";
+        Connection conn = DB.connDb();
+        PreparedStatement stmt = conn.prepareStatement(select);
+        stmt.setInt(1, idlight);
 
-            ResultSet rs = stmt.executeQuery();
-
+        try (ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
-                // Estrai contatore
-                counter = rs.getInt("counter");
+                return true; // La luce con l'ID specificato ha il flag bootstrapped settato a true
             }
-
-        } catch (SQLException e) {
-            System.err.println("[FAIL] - Error during Counter reading field from DB");
-            e.printStackTrace(System.err);
-            e.getMessage();
         }
 
-        return counter;
+        return false; // La luce con l'ID specificato non ha il flag bootstrapped settato a true
+    }
 
+
+    public boolean lightExists(int lightId) throws SQLException {
+        boolean exists = false;
+        Connection conn = DB.connDb();
+        String sql = "SELECT COUNT(*) AS count FROM motion WHERE idlight = ?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, lightId);
+        ResultSet rs = stmt.executeQuery();
+
+        if(rs.next()) {
+            int count = rs.getInt("count");
+            if(count > 0) {
+                    exists = true;
+            }
+        }
+        return exists;
+    }
+
+    public int getCounterForLight(int lightId) throws SQLException {
+        int counter = 0;
+        Connection conn = DB.connDb();
+        // Query per ottenere il contatore
+        String sql = "SELECT MAX(counter) AS counter FROM motion WHERE idlight = ?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setInt(1, lightId);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            // Estrai contatore
+            counter = rs.getInt("counter");
+        }
+        return counter;
     }
 
     public List<String> selectAllMotion() {
@@ -165,6 +167,7 @@ public class LightData {
                 row += ", Lights: " + rs.getString("lights");
                 row += ", LightsDegree: " + rs.getInt("lightsDegree");
                 row += ", Brights: " + rs.getString("brights");
+                row += ", Bootstrepped: " + rs.getString("bootstrapped");
                 row += ", Time:" + rs.getString("created_at");
                 rows.add(row);
             }

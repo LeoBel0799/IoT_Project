@@ -60,7 +60,7 @@ public class PoweringLights  {
 
 
 
-    public void setInitialStateofLight(){
+    public void setInitialStateofLight() throws SQLException {
         int counter = actuatorStatus.getCounterForActuator(light);
         int finalnewCounter = counter;
         int updCounter = 0;

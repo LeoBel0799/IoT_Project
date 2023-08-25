@@ -117,8 +117,8 @@ public class LightHandler implements MqttCallback, IMqttMessageListener, Runnabl
                 int lightsDegree =  ((Number)json.get("lightsDegree")).intValue();
                 String brights = (String) json.get("brights");
                 //System.out.println("[INFO] - Taking data...");
-                lightData.insertMotionData(idlight,lights,lightsDegree,brights);
-                Thread.sleep(15000); // 50 millisecond
+                lightData.insertMotionData(idlight,lights,lightsDegree,brights,false);
+                Thread.sleep(1000);
             } catch (ParseException | InterruptedException | SQLException e) {
                 System.err.println("[FAIL] - Error during parsing JSON Message");
                 e.printStackTrace(System.err);

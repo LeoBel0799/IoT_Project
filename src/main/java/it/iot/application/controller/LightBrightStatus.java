@@ -11,6 +11,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class LightBrightStatus {
     ActuatorStatus actuator  = new ActuatorStatus();
@@ -207,7 +208,7 @@ public class LightBrightStatus {
     }
 
 
-    public Double getWearLevel(int idActuator) {
+    public Double getWearLevel(int idActuator) throws SQLException {
         int counter = actuator.getCounterForActuator(idActuator);
         double wearLevel = calculateWearFromCounter(counter);
         return wearLevel;

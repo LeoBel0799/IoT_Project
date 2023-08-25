@@ -53,18 +53,16 @@ public class ActuatorStatus {
     public void insertActuatorData(int idActuator, int counter, String light, String bright, Double wearLevel, Boolean fulminated) throws SQLException {
         String insert = "INSERT INTO actuator (idActuator, counter, light,bright,wearLevel,fulminated) VALUES (?,?,?,?,?,?)";
         System.out.println("[INFO] - Receiving actuator data");
-        int count = actuatorCounters.getOrDefault(idActuator, 0) + 1;
-        actuatorCounters.put(idActuator, count);
 
         try {
             Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(insert);
             stmt.setInt(1,idActuator);
-            stmt.setInt(2,count);
-            stmt.setString(2,light);
-            stmt.setString(3,bright);
-            stmt.setDouble(4,wearLevel);
-            stmt.setBoolean(5,fulminated);
+            stmt.setInt(2,counter);
+            stmt.setString(3,light);
+            stmt.setString(4,bright);
+            stmt.setDouble(5,wearLevel);
+            stmt.setBoolean(6,fulminated);
             stmt.executeUpdate();
             System.out.println("[OK] - Actuator Data inserted into DB");
 
@@ -108,13 +106,8 @@ public class ActuatorStatus {
 
 
     public String getLightStatusFromActuator(int idLight) throws SQLException {
-
         String lightStatus = null;
-
         String select = "SELECT light FROM actuator WHERE idActuator=? ORDER BY created_at DESC LIMIT 1";
-
-        try {
-
             Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(select);
             stmt.setInt(1, idLight);
@@ -125,36 +118,20 @@ public class ActuatorStatus {
                 lightStatus = rs.getString("light");
             }
 
-        } catch (SQLException e) {
-            System.err.println("Error reading light status from DB: " + e.getMessage());
-        }
-
         return lightStatus;
 
     }
 
     public Double getWearLevelromActuator(int idActuator) throws SQLException {
-
         Double lightStatus = null;
-
         String select = "SELECT wearLevel FROM actuator WHERE idActuator=? ORDER BY created_at DESC LIMIT 1";
-
-        try {
-
             Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(select);
             stmt.setInt(1, idActuator);
-
             ResultSet rs = stmt.executeQuery();
-
             if (rs.next()) {
                 lightStatus = rs.getDouble("wearLevel");
             }
-
-        } catch (SQLException e) {
-            System.err.println("Error reading wear level from DB: " + e.getMessage());
-        }
-
         return lightStatus;
 
     }
@@ -162,53 +139,35 @@ public class ActuatorStatus {
 
     public boolean setFulminatedStatus(int idActuator) throws SQLException {
         String update = "UPDATE actuator SET fulminated = ? WHERE idActuator = ?";
-        try {
             Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(update);
             stmt.setBoolean(1, true);
             stmt.setInt(2, idActuator);
-
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
             } else {
                 System.out.println("No rows affected. Actuator with ID not found: " + idActuator);
             }
-        } catch (SQLException e) {
-            System.err.println("Error updating fulminated status in DB: " + e.getMessage());
-        }
         return true;
 
     }
 
 
     public void insertWearAndFulminatedResetted(int idActuator, float wear, boolean fulm, int count) throws SQLException {
-
         String update = "UPDATE actuator SET wearLevel = ?, fulminated = ?, counter = ? WHERE idActuator = ?";
-
-        try {
-
             Connection conn = db.connDb();
-
             PreparedStatement stmt = conn.prepareStatement(update);
-
             stmt.setFloat(1, wear);
             stmt.setBoolean(2, fulm);
             stmt.setInt(3,count);
             stmt.setInt(3, idActuator);
-
             stmt.executeUpdate();
 
-        }catch (SQLException e) {
-            System.err.println("[FAIL] - Error during insertion data into Actuator table\n");
-            e.printStackTrace(System.err);
-            e.getMessage();
-        }
     }
 
-    public int getCounterForActuator(int idActuator) {
+    public int getCounterForActuator(int idActuator) throws SQLException {
 
         int counter = 0;
-        try {
             Connection conn = DB.connDb();
             // Query per ottenere il contatore
             String sql = "SELECT MAX(counter) AS counter FROM actuator WHERE idActuator = ?";
@@ -222,11 +181,7 @@ public class ActuatorStatus {
                 counter = rs.getInt("counter");
             }
 
-        } catch (SQLException e) {
-            System.err.println("[FAIL] - Error during Counter reading field from DB");
-            e.printStackTrace(System.err);
-            e.getMessage();
-        }
+
 
         return counter;
 

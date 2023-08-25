@@ -67,8 +67,8 @@ static char pub_topic_light[BUFFER_SIZE];
 #define STATE_MACHINE_PERIODIC     5*CLOCK_SECOND
 static struct etimer periodic_timer;
 
-// Periodic timer to publish a message (every 40 sec)
-#define PUB_PERIOD 40 * CLOCK_SECOND
+// Periodic timer to publish a message (every 15 sec)
+#define PUB_PERIOD 15 * CLOCK_SECOND
 static struct etimer pub_timer;
 
 /*---------------------------------------------------------------------------*/
