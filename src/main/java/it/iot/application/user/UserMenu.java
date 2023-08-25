@@ -86,7 +86,13 @@ public class UserMenu implements Runnable {
             try{
                 int choice = input.nextInt();
                 switch (choice) {
+                    /*
+                    Caso inserito per evitare che possa l'utente scegliere il caso 3 quindi che ragiona sulla tabella "In-live" senza che questa tabella del DB
+                    sia stata popolata almeno una volta. Quindi l'utente deve per forza scegliere questo caso prima con una luce e poi con l'altra così da mettere il primo
+                    record nella tabella actuator. Dopo che le luci sono state inserite per la prima volta questa opzione di menu non sarà più eseguibile.
+                     */
                     case BOOTSTRAP_LIGHTS:
+                        //VERIFICATO FUNGE
                         if (light1Bootstrapped && light2Bootstrapped) {
                             System.out.println("[INFO] - Light registered. Option (2) not available anymore.");
                         } else {
@@ -110,7 +116,10 @@ public class UserMenu implements Runnable {
                         }
                         break;
 
+                    /*CASO LIGHT FUNZIONANTE (Quando la luce è on il LED dovrebbe essere rosso invece si accende verde su cooja mentre quando è spento dovrebbe essere giallo ma è blu su cooja)
+                    vedendo la console dell'applicativo combacia VEDE OFF - MANDA ON AL SENSORE - GET DAL SENSORE.*/
                     case  OPTION_TURN_ON_LIGHT:
+                        //VERIFICATO FUNGE
                         if (optionOneExecuted){
                             int askForLightId = askForLightId();
                             if (lightData.getBootstrappedStatus(askForLightId)){
