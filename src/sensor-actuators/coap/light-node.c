@@ -55,7 +55,6 @@ AUTOSTART_PROCESSES(&light_server,&wear_controller);
 
 // Dichiarazione delle variabili globali
 
-static void res_event_handler(void);
 static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_event_trigger();
@@ -100,8 +99,9 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 
 static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     char response_payload[64];
-    int length = snprintf(response_payload, sizeof(response_payload), "%.2d,%s,%d",
-                          wear_level, fulminated ? "true" : "false",counter);
+    int length = snprintf(response_payload, sizeof(response_payload), "%.2f,%s,%d",
+                          wear_level, fulminated ? "true" : "false", counter);
+
 
     coap_set_header_content_format(response, TEXT_PLAIN);
     coap_set_payload(response, response_payload, length);
