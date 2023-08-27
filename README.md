@@ -4,4 +4,4 @@
 
 - Testare OBS su WearLevel
 
-- Testare caso BRIGHT
+- Testare caso BRIGHT (errore nel c di Bright. Led variable unused ma è usata. risolvere e testare poi)
