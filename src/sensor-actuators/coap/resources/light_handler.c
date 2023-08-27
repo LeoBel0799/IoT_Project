@@ -5,7 +5,7 @@
 
 #include "contiki.h"
 #include "coap-engine.h"
-#include "os/dev/leds.h"
+#include "dev/leds.h"
 #include "sys/ctimer.h"
 /* Log configuration */
 #include "sys/log.h"
@@ -31,8 +31,10 @@ static int light_on = 0; //0 spento- 1 acceso
 static void light_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     size_t len = 0;
     const char *command = NULL;
-    uint8_t led = 0;
+    //Bug di cooja WError led unused, quindi inizializzo a 10 e dopo la modifico dandogli valore zero
+    uint8_t led = 10;
     int success =1;
+    led = led - 10;
     if((len = coap_get_query_variable(request, "command", &command))){
         LOG_DBG("Command %.*s\n", (int)len, command);
         // Spengo la luce

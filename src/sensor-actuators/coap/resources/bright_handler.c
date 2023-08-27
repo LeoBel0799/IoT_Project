@@ -30,7 +30,8 @@ RESOURCE(res_bright_controller,
 static void bright_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     size_t len = 0;
     const char *command = NULL;
-    uint8_t led = 0;
+    uint8_t led = 10;
+    led = led - 10;
     int success =1;
     if((len = coap_get_query_variable(request, "command", &command))){
         LOG_DBG("Command %.*s - WAIT!\n", (int)len, command);
