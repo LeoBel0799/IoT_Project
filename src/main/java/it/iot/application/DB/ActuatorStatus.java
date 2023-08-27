@@ -138,6 +138,22 @@ public class ActuatorStatus {
         return lightStatus;
 
     }
+    public String getBrightStatusFromActuator(int idLight) throws SQLException {
+        String brightStatus = null;
+        String select = "SELECT bright FROM actuator WHERE idActuator=? ORDER BY created_at DESC LIMIT 1";
+        Connection conn = db.connDb();
+        PreparedStatement stmt = conn.prepareStatement(select);
+        stmt.setInt(1, idLight);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            brightStatus = rs.getString("bright");
+        }
+
+        return brightStatus;
+
+    }
 
     public Double getWearLevelromActuator(int idActuator) throws SQLException {
         Double lightStatus = null;

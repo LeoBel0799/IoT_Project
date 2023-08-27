@@ -82,11 +82,12 @@ public class PoweringLights  {
             }
             try {
                 String newStatus = coapClient.getLightsOnOff(address);
+                String newBrightStatus = coapClient.getBrightsOnOff(address);
                 actuatorStatus.insertActuatorData(
                         light,
                         updCounter,
                         newStatus,
-                        null,
+                        newBrightStatus,
                         newWearLevel,
                         false
                 );
@@ -129,11 +130,12 @@ public class PoweringLights  {
         }
         try {
             String newStatus = coapClient.getLightsOnOff(address);
+            String brightStatus = coapClient.getBrightsOnOff(address);
             actuatorStatus.insertActuatorData(
                     actuatorID,
                     updCounter,
                     newStatus,
-                    null,
+                    brightStatus,
                     newWearLevel,
                     false
             );

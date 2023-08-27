@@ -166,10 +166,12 @@ public class LightBrightStatus {
 
 
     public void putBrightsOn(String ip, String order) {
-        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?command=ON");
+        String uri = "coap://[" + ip + "]/actuator/brights?command=ON";
+        CoapClient brightActuator = new CoapClient(uri);
+
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println(" +  " + order);
+            System.out.println(" [COAP RESPONSE BRIGHT -1] +  " + response);
 
             // Check the response
             if (response.isSuccess()) {
@@ -177,6 +179,7 @@ public class LightBrightStatus {
             } else {
                 System.out.println("[-] PUT request failed");
             }
+            brightActuator.shutdown();
         } catch (ConnectorException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -188,7 +191,7 @@ public class LightBrightStatus {
         CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?command=OFF");
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println(" +  " + order);
+            System.out.println("[COAP RESPONSE BRIGHT -O]+  " + response);
 
             // Check the response
             if (response.isSuccess()) {
@@ -196,6 +199,7 @@ public class LightBrightStatus {
             } else {
                 System.out.println("[-] PUT request failed");
             }
+            brightActuator.shutdown();
         } catch (ConnectorException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

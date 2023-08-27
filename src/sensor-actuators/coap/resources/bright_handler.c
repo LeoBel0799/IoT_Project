@@ -42,7 +42,7 @@ static void bright_put_handler(coap_message_t *request, coap_message_t *response
             led = 0;
             LOG_INFO("[OK] - Bright OFF");
         }else if(strncmp(command, "ON", len) == 0){
-            led = LEDS_BLUE;
+            led = LEDS_YELLOW;
             bright_on = 1;
             LOG_INFO("[OK] - Bright ON");
         }else{

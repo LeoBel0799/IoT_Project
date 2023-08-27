@@ -28,22 +28,19 @@ public class PoweringBrights {
         }
     }
 
-    public void setBright(int lightID) {
+    public void setBright(int lightID) throws SQLException {
         String res;
-        String status = null;
-        try {
-            status = actuatorStatus.getLightStatusFromActuator(lightID);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        String status = actuatorStatus.getBrightStatusFromActuator(lightID);
+
+        System.out.println("DOPO la query: "+ status);
         if (status.equals("ON")) { //se la luce con quell'id è accesa posso accendere anche gli abbaglianti
-            res = "ON";
-            System.out.println("[!] Sending PUT request (ON) to Brights");
-            coapClient.putBrightsOn(address, res);
-        } else  {
             res = "OFF";
             System.out.println("[!] Sending PUT request (OFF) to Brights");
             coapClient.putBrightsOff(address, res);
+        } else  {
+            res = "ON";
+            System.out.println("[!] Sending PUT request (ON) to Brights");
+            coapClient.putBrightsOn(address, res);
         }
         try {
 
