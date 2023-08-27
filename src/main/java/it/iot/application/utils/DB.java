@@ -1,4 +1,4 @@
-package it.iot.application.DB;
+package it.iot.application.utils;
 
 import java.sql.*;
 

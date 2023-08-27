@@ -1,13 +1,12 @@
 package it.iot.application.DB;
 
+import it.iot.application.utils.DB;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class NodeData  {
 

@@ -24,7 +24,7 @@ public class PoweringBrights {
         try {
             this.coapClient = new LightBrightStatus();
         } catch (Exception e) {
-            // gestisci eccezioni
+
         }
     }
 
@@ -50,13 +50,12 @@ public class PoweringBrights {
             //l'usura per gli abbaglianti non è prevista, si aggancia a light. qua registstro solo il nuovo stato di bright
             String newStatus = LightBrightStatus.getInstance().getBrightsOnOff(address);
             actuatorStatus.insertActuatorData(
-                    light,
+                    lightID,
                     actuatorStatus.getCounterForActuator(lightID),
+                    actuatorStatus.getLightStatusFromActuator(lightID),
                     newStatus,
-                    null,
-                    null,
-                    null
-            );
+                    actuatorStatus.getWearLevelromActuator(lightID),
+                    actuatorStatus.getFulminatedFromActuator(lightID));
         } catch (ConnectorException e) {
             e.printStackTrace();
         } catch (IOException e) {

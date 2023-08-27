@@ -1,5 +1,6 @@
 package it.iot.application.DB;
 
+import it.iot.application.utils.DB;
 import org.eclipse.californium.elements.exception.ConnectorException;
 
 import java.io.IOException;
@@ -103,6 +104,22 @@ public class ActuatorStatus {
 
     }
 
+    public boolean getFulminatedFromActuator(int idLight) throws SQLException {
+        boolean fulminated = false;
+        String select = "SELECT fulminated FROM actuator WHERE idActuator=? ORDER BY created_at DESC LIMIT 1";
+        Connection conn = db.connDb();
+        PreparedStatement stmt = conn.prepareStatement(select);
+        stmt.setInt(1, idLight);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            fulminated = rs.getBoolean("fulminated");
+        }
+
+        return fulminated;
+
+    }
 
 
     public String getLightStatusFromActuator(int idLight) throws SQLException {

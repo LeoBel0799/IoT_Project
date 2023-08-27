@@ -80,7 +80,8 @@ public class UserMenu implements Runnable {
     public void menu() throws ConnectorException, IOException, InterruptedException, SQLException {
         boolean shouldExit = false;
         Scanner input = new Scanner(System.in);
-        boolean optionOneExecuted = false; // Inizializza la variabile all'inizio del loop
+        boolean optionOneExecuted = false; // Inizializza la variabile all'inizio del
+        boolean lightExecuted = false;
         while (!shouldExit){
             showMenu();
             try{
@@ -129,6 +130,7 @@ public class UserMenu implements Runnable {
                                 }else{
                                     System.out.println("[INFO] - No Light status records with ID: " + askForLightId + ", still arrived!");
                                 }
+                                lightExecuted = true;
                             }else {
                                 System.out.println("[INFO] - Light " + askForLightId + " was not bootstrapped!");
                             }
@@ -140,7 +142,7 @@ public class UserMenu implements Runnable {
 
                     case OPTION_TURN_ON_BRIGHT:
                         //TODO: TESTARE BRIGHT
-                        if (optionOneExecuted) {
+                        if (optionOneExecuted && lightExecuted) {
                             int brightId = askForLightId();
                             if (lightData.lightExists(brightId)) {
                                 PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus, nodeData);
