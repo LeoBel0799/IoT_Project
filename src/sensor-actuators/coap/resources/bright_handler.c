@@ -33,7 +33,7 @@ static void bright_put_handler(coap_message_t *request, coap_message_t *response
     uint8_t led = 10;
     led = led - 10;
     int success =1;
-    if((len = coap_get_query_variable(request, "command", &command))){
+    if((len = coap_get_query_variable(request, "order", &command))){
         LOG_DBG("Command %.*s - WAIT!\n", (int)len, command);
         // Spengo la luce
         if(strncmp(command, "OFF", len) == 0){
@@ -42,7 +42,7 @@ static void bright_put_handler(coap_message_t *request, coap_message_t *response
             led = 0;
             LOG_INFO("[OK] - Bright OFF");
         }else if(strncmp(command, "ON", len) == 0){
-            led = LEDS_YELLOW;
+            led = LEDS_BLUE;
             bright_on = 1;
             LOG_INFO("[OK] - Bright ON");
         }else{
@@ -54,8 +54,11 @@ static void bright_put_handler(coap_message_t *request, coap_message_t *response
   }
 
   if(success) {
-    coap_set_status_code(response, CONTENT_2_05);
+        coap_set_status_code(response, CONTENT_2_05);
+        leds_off(LEDS_ALL);
+        leds_on(led);
   }
+
 
 }
 

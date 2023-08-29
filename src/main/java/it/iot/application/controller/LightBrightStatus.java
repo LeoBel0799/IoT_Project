@@ -166,7 +166,7 @@ public class LightBrightStatus {
 
 
     public void putBrightsOn(String ip, String order) {
-        String uri = "coap://[" + ip + "]/actuator/brights?command=ON";
+        String uri = "coap://[" + ip + "]/actuator/brights?order=ON";
         CoapClient brightActuator = new CoapClient(uri);
 
         try {
@@ -188,7 +188,7 @@ public class LightBrightStatus {
     }
 
     public void putBrightsOff(String ip, String order) {
-        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?command=OFF");
+        CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?order=OFF");
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
             System.out.println("[COAP RESPONSE BRIGHT -O]+  " + response);
@@ -208,15 +208,10 @@ public class LightBrightStatus {
     }
 
     double calculateWearFromCounter(int counter) {
-        return counter;
+        return counter*0.40;
     }
 
 
-    public Double getWearLevel(int idActuator) throws SQLException {
-        int counter = actuator.getCounterForActuator(idActuator);
-        double wearLevel = calculateWearFromCounter(counter);
-        return wearLevel;
-    }
 }
 
 
