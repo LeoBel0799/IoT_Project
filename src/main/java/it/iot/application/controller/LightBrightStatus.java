@@ -52,7 +52,7 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
         System.out.println("Coap response nella GET Wear: " + coapResponse);
-        String[] results = new String[2];
+        String[] results = new String[3];
 
         if (coapResponse != null && coapResponse.isSuccess()) {
             String responseText = coapResponse.getResponseText();
@@ -129,9 +129,9 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         // crea payload
         String payload = wearLevel + "," + fulminated + "," + counter;
-
+        System.out.println(payload);
         CoapResponse response = coapClient.post(payload, MediaTypeRegistry.TEXT_PLAIN);
-        System.out.println("COAP responde per SENDING WEAR LEVEL" + response);
+        System.out.println("COAP risponde per SENDING WEAR LEVEL" + response);
         if(response.isSuccess()) {
             System.out.println("[OK]- Data send successfully");
         } else {

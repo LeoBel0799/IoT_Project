@@ -170,19 +170,26 @@ public class ActuatorStatus {
     }
 
 
-    public boolean setFulminatedStatus(int idActuator) throws SQLException {
+    public void setFulminatedStatus(int idActuator) throws SQLException {
         String update = "UPDATE actuator SET fulminated = ? WHERE idActuator = ?";
             Connection conn = db.connDb();
             PreparedStatement stmt = conn.prepareStatement(update);
             stmt.setBoolean(1, true);
             stmt.setInt(2, idActuator);
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected == 0) {
-            } else {
-                System.out.println("No rows affected. Actuator with ID not found: " + idActuator);
-            }
-        return true;
+            stmt.executeUpdate();
+    }
 
+    public boolean getFulminatedStatus (int idActuator) throws SQLException {
+        Boolean stats = null;
+        String select = "SELECT fulminated FROM actuator WHERE idActuator=?";
+        Connection conn = db.connDb();
+        PreparedStatement stmt = conn.prepareStatement(select);
+        stmt.setInt(1, idActuator);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            stats = rs.getBoolean("fulminated");
+        }
+        return stats;
     }
 
 
@@ -193,7 +200,7 @@ public class ActuatorStatus {
             stmt.setFloat(1, wear);
             stmt.setBoolean(2, fulm);
             stmt.setInt(3,count);
-            stmt.setInt(3, idActuator);
+            stmt.setInt(4, idActuator);
             stmt.executeUpdate();
 
     }

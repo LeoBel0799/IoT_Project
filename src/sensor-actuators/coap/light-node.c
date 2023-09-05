@@ -22,6 +22,8 @@
 
 /* Log configuration */
 #include "sys/log.h"
+#include "sys/process.h"
+
 #define LOG_MODULE "light"
 #define LOG_LEVEL LOG_LEVEL_APP
 #define NODE_1_ID 1
@@ -50,7 +52,7 @@ static struct etimer check_data_timer;
 //dati che sono due processi servono due dichiarazioni e partono con autostart
 PROCESS(light_server, "Car controller");
 PROCESS(wear_controller, "COAP Wear obs");
-AUTOSTART_PROCESSES(&light_server,&wear_controller);
+process_start(&light_server,NULL);
 
 
 // Dichiarazione delle variabili globali
@@ -62,8 +64,8 @@ static void res_event_trigger();
 EVENT_RESOURCE(res_wearLevel_observer,
          "title=\"wearLevel observer\"",
          res_get_handler_coap_values,
-         NULL,
          res_post_handler,
+         NULL,
          NULL,
          res_event_trigger);
 
@@ -82,8 +84,9 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 
         // Leggi secondo valore e converte in bool
         token = strtok(NULL, ",");
-        if (token != NULL) {
-            fulminated = (*token == '1');
+        // Leggi secondo valore e converti in bool
+        if (strcmp(token, "true") == 0) {
+            fulminated = true;
 
             // Leggi terzo valore e converte in int
             token = strtok(NULL, ",");
@@ -93,7 +96,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
         }
     }
     new_data_received=true;
-
+    process_start(&wear_controller,NULL);
 
 }
 
@@ -110,7 +113,7 @@ static void res_get_handler_coap_values(coap_message_t *request, coap_message_t 
 
 static void res_event_trigger() {
             fulminated = false;
-            wear_level = 0;
+            wear_level = 0.0;
             counter = 0;
 }
 
@@ -187,16 +190,17 @@ void client_handler(coap_message_t *response) {
 
 PROCESS_THREAD(wear_controller, ev, data) {
     PROCESS_BEGIN();
-
+    LOG_INFO("THREAD PER WEAR LEVEL PARTITO");
     // Inizializza il bottone
     button_hal_init();
-
+    LOG_INFO("Valore di new_data_received: %d\n", new_data_received);
     while (1) {  // Loop infinito
           etimer_set(&check_data_timer, CLOCK_SECOND);
           PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
         // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated e counter
         if (new_data_received == true ){
             leds_on(LEDS_RED);  // Accendi il LED rosso
+            LOG_INFO("[OK] -  Wear data received!\n");
             etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
             leds_off(LEDS_RED);  // Spegni il LED rosso

@@ -16,7 +16,7 @@ public class PoweringLights {
     private double currentWearLevel = 0.0; // Variabile di istanza per memorizzare il wear level attuale
 
 
-    private static final double MAX_WEAR_LEVEL = 20.0;
+    private static final double MAX_WEAR_LEVEL = 3.0;
     int light;
     String address;
     LightData lightData;
@@ -42,8 +42,14 @@ public class PoweringLights {
 
     public void callResetForLight(int actuatorID, double wearLevel, boolean fulminated, int counter) throws SQLException, ConnectorException, IOException {
         //MANDO I DATI A COOAP PER RESET TRAMITE BOTTONE NEL C
+        //NOTA: NEL LA RISORSA NON è OBS IN C
         coapClient.sendWearLevel(address, wearLevel, fulminated, counter);
-        //QUA MI PRENDO I WEAR LEVEL E FULMINATED RESETTATI
+        //Timer per dare il tempo di resettare la luce nel C tramite bottone
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            System.out.println("[FAIL] - Error in delay operation");
+        }
         String[] results = coapClient.getWearAndFulminatedFromActuator(address);
         System.out.println("Risultati resettati presi da COAP freschissimi");
         for (String value : results) {
@@ -102,34 +108,46 @@ public class PoweringLights {
         int counter = actuatorStatus.getCounterForActuator(actuatorID); // Usare actuatorID invece di "light"
         finalnewCounter = counter;
         currentWearLevel = wearLevel;
-        //if (wearLevel > MAX_WEAR_LEVEL){
-        //     Boolean fulminated = actuatorStatus.setFulminatedStatus(actuatorID);
-        //TODO: DA TESTARE
-        //callResetForLight(wearLevel,fulminated,counter)
-        //} else {
-        String command;
-        if (lightStatus.equals("ON")) {
-            command = "OFF";
-            int updCounter = finalnewCounter + 1;
-            double newWearLevel = coapClient.calculateWearFromCounter(updCounter);
-            System.out.println("[INFO] - Sending PUT request (OFF) to Lights");
-            coapClient.putLightsOff(address, command);
-            String newStatus = coapClient.getLightsOnOff(address);
-            String newBrightStatus = coapClient.getBrightsOnOff(address);
-            actuatorStatus.insertActuatorData(actuatorID, updCounter, newStatus, newBrightStatus, newWearLevel, false);
-            finalnewCounter = updCounter; // Aggiorna il contatore
-            currentWearLevel = newWearLevel; // Aggiorna il wear level
+
+        if (wearLevel == MAX_WEAR_LEVEL){
+            System.out.println("[INFO] - Reset Light " + actuatorID + " to use it. " + wearLevel + " equal treshold: " + MAX_WEAR_LEVEL);
+        }
+
+        if (wearLevel > MAX_WEAR_LEVEL) {
+
+            actuatorStatus.setFulminatedStatus(actuatorID);
+            Boolean fulminated = actuatorStatus.getFulminatedStatus(actuatorID);
+            System.out.println("Valore della get di fulminated dopo setting: " + fulminated);
+            callResetForLight(actuatorID, wearLevel, fulminated, counter);
         } else {
-            command = "ON";
-            int updCounter = finalnewCounter + 1;
-            double newWearLevel = coapClient.calculateWearFromCounter(updCounter);
-            System.out.println("[INFO] - Sending PUT request (ON) to Lights");
-            coapClient.putLightsOn(address, command);
-            String newStatus = coapClient.getLightsOnOff(address);
-            String newBrightStatus = coapClient.getBrightsOnOff(address);
-            actuatorStatus.insertActuatorData(actuatorID, updCounter, newStatus, newBrightStatus, newWearLevel, false);
-            finalnewCounter = updCounter; // Aggiorna il contatore
-            currentWearLevel = newWearLevel; // Aggiorna il wear level
+            try {
+                String command;
+                if (lightStatus.equals("ON")) {
+                    command = "OFF";
+                    int updCounter = finalnewCounter + 1;
+                    double newWearLevel = coapClient.calculateWearFromCounter(updCounter);
+                    System.out.println("[INFO] - Sending PUT request (OFF) to Lights");
+                    coapClient.putLightsOff(address, command);
+                    String newStatus = coapClient.getLightsOnOff(address);
+                    String newBrightStatus = coapClient.getBrightsOnOff(address);
+                    actuatorStatus.insertActuatorData(actuatorID, updCounter, newStatus, newBrightStatus, newWearLevel, false);
+                    finalnewCounter = updCounter; // Aggiorna il contatore
+                    currentWearLevel = newWearLevel; // Aggiorna il wear level
+                } else {
+                    command = "ON";
+                    int updCounter = finalnewCounter + 1;
+                    double newWearLevel = coapClient.calculateWearFromCounter(updCounter);
+                    System.out.println("[INFO] - Sending PUT request (ON) to Lights");
+                    coapClient.putLightsOn(address, command);
+                    String newStatus = coapClient.getLightsOnOff(address);
+                    String newBrightStatus = coapClient.getBrightsOnOff(address);
+                    actuatorStatus.insertActuatorData(actuatorID, updCounter, newStatus, newBrightStatus, newWearLevel, false);
+                    finalnewCounter = updCounter; // Aggiorna il contatore
+                    currentWearLevel = newWearLevel; // Aggiorna il wear level
+                }
+            }catch (NumberFormatException e){
+                System.out.println("[INFO] - Reset light " + actuatorID + " to use it!");
+            }
         }
     }
 }
