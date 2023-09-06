@@ -49,10 +49,11 @@ int counter = 0;
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
 static struct etimer check_data_timer;
-//dati che sono due processi servono due dichiarazioni e partono con autostart
+//processo light_server avviato con autostart per farlo partire ad inizio programma
+//proesso per wear dichiarato all'inizio ma fatto partire "manulmente" sotto certe condizioni
 PROCESS(light_server, "Car controller");
-PROCESS(wear_controller, "COAP Wear obs");
-process_start(&light_server,NULL);
+PROCESS(wear_controller, "COAP Wear");
+AUTOSTART_PROCESSES(&light_server);
 
 
 // Dichiarazione delle variabili globali
@@ -68,6 +69,46 @@ EVENT_RESOURCE(res_wearLevel_observer,
          NULL,
          NULL,
          res_event_trigger);
+
+
+PROCESS_THREAD(wear_controller, ev, data) {
+    PROCESS_BEGIN();
+    // Inizializza il bottone
+    button_hal_init();
+    while (1) {  // Loop infinito
+          etimer_set(&check_data_timer, CLOCK_SECOND);
+          PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
+        // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated e counter
+        if (new_data_received == true ){
+                leds_on(LEDS_RED);  // Accendi il LED rosso
+                LOG_INFO("[OK] -  Wear data received!\n");
+                etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
+                PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
+                leds_off(LEDS_RED);  // Spegni il LED rosso
+        // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
+        //questi nuovi dati resettati devono essere mandati nel java e nel fb
+        //Se si prova in Cooja modificare 91 mettendo ev & button_hal_press_event perchè come sta adesso con
+        // == richiede che il bottone sia premuto per un periodo di tempo più lungo (cosa da fare sul sensore fisico)
+        //mentre su cooja non si può fare  e quindi essendo istantaneo non ha il tempo di rilevare il press del bottone
+            if (ev == button_hal_press_event) {
+                // Il bottone è stato premuto (anche se è stato rilasciato rapidamente)
+                LOG_INFO("[INFO] - BUTTON PRESSED");
+                res_event_trigger();
+
+                leds_on(LEDS_BLUE);
+                etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
+                PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
+                leds_off(LEDS_BLUE);  // Spegni il LED rosso
+                new_data_received = false;
+                break;
+            }
+
+        }
+        PROCESS_YIELD(); // yield periodicamente
+    }
+
+    PROCESS_END();
+}
 
 // Funzione di gestione della richiesta POST CoAP
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
@@ -115,16 +156,23 @@ static void res_event_trigger() {
             fulminated = false;
             wear_level = 0.0;
             counter = 0;
+            LOG_INFO("[OK] - Light replaced\n");
+             // Chiamata alla funzione per ottenere i valori dopo il reset
+             coap_message_t response;
+             uint8_t buffer[64];
+             int32_t offset = 0;
+             res_get_handler_coap_values(NULL, &response, buffer, sizeof(buffer), &offset);
+
 }
 
 /*---------------------------------------------------------------------------*/
 static bool is_connected() {
 	if(NETSTACK_ROUTING.node_is_reachable()) {
-		LOG_INFO("The Border Router is reachable\n");
+		LOG_INFO("[INFO] - BR reachable\n");
 		return true;
   	}
 
-	LOG_INFO("Waiting for connection with the Border Router\n");
+	LOG_INFO("[INFO] - Waiting for connection with BR\n");
 	return false;
 }
 
@@ -163,7 +211,7 @@ static bool is_connected() {
 void client_handler(coap_message_t *response) {
 	const  uint8_t *res_text;
 	if(response == NULL) {
-		LOG_INFO("Request timed out\n");
+		LOG_INFO("[INFO] - Request timed out\n");
 		etimer_set(&wait_registration, CLOCK_SECOND* 10);
 		return;
 	}
@@ -179,7 +227,7 @@ void client_handler(coap_message_t *response) {
       // Controlla il valore estratto
       if(strcmp(args[0], "ok") == 0) {
         registered = true;
-        LOG_INFO("[+] Actuator registered!\n");
+        LOG_INFO("[OK] - Actuator registered!\n");
       } else {
         // Registrazione fallita, riprova
         etimer_set(&wait_registration, CLOCK_SECOND*10);
@@ -188,47 +236,7 @@ void client_handler(coap_message_t *response) {
 
 
 
-PROCESS_THREAD(wear_controller, ev, data) {
-    PROCESS_BEGIN();
-    LOG_INFO("THREAD PER WEAR LEVEL PARTITO");
-    // Inizializza il bottone
-    button_hal_init();
-    LOG_INFO("Valore di new_data_received: %d\n", new_data_received);
-    while (1) {  // Loop infinito
-          etimer_set(&check_data_timer, CLOCK_SECOND);
-          PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
-        // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated e counter
-        if (new_data_received == true ){
-            leds_on(LEDS_RED);  // Accendi il LED rosso
-            LOG_INFO("[OK] -  Wear data received!\n");
-            etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
-            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
-            leds_off(LEDS_RED);  // Spegni il LED rosso
-            new_data_received = false;
-        }
-        // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
-        //questi nuovi dati resettati devono essere mandati nel java e nel fb
-        if (ev == button_hal_release_event) {
-            LOG_INFO("[INFO] - BUTTON PRESSED");
-            res_event_trigger();
-            LOG_INFO("[OK] - Item replaced\n");
-            leds_on(LEDS_BLUE);
-            etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
-            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
-            leds_off(LEDS_BLUE);  // Spegni il LED rosso
-            res_wearLevel_observer.trigger();
-            break;
 
-            //la chiamata agli observer serve per notificare in automatico il cambiamento che poi dovrebbe essere letto dal
-            //metodo JAVA getWearAndFulminatedFromActuator sintonizzato sull'ip dell'attuatore resettato e con uri puntato
-            //ad actuator/data che è l'indirizzo della risorsa COAP observer.
-        }
-
-        PROCESS_YIELD(); // yield periodicamente
-    }
-
-    PROCESS_END();
-}
 
 
 
@@ -241,13 +249,13 @@ PROCESS_THREAD(light_server, ev, data){
 
 	PROCESS_PAUSE();
 
-	LOG_INFO("Starting Light CoAP-Server\n");
+	LOG_INFO("[INFO] - Starting Light CoAP-Server\n");
 	//qui avviene il collegamenti ai due thread, infatti le due stringhe actuator/lights
 	//e actuator brights sono esattamente le stesse usate dai metodi di put e get usate nella
 	//classe java LightBrightStatus
 	coap_activate_resource(&res_bright_controller, "actuator/brights");
 	coap_activate_resource(&res_light_controller, "actuator/lights");
-     // Abilita obs su wear level
+     // Abilita wear level
     coap_activate_resource(&res_wearLevel_observer, "actuator/data");
 	etimer_set(&connectivity_timer, CLOCK_SECOND * INTERVAL_BETWEEN_CONNECTION_TESTS);
 	PROCESS_WAIT_UNTIL(etimer_expired(&connectivity_timer));
@@ -262,7 +270,7 @@ PROCESS_THREAD(light_server, ev, data){
         next_id = next_id + 1;
         uint16_t node_id = next_id ;
 
-		LOG_INFO("Sending registration message\n");
+		LOG_INFO("[INFO] - Sending registration msg\n");
 		//qui prendo gli id che mi sono generato randomicamente e li mando al java,
 		//questo id che mando al java lo prende tramite una get json
 		//nella classe registrationLightResource.java e lo stesso id viene mandato

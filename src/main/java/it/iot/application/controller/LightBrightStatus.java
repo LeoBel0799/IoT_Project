@@ -31,7 +31,7 @@ public class LightBrightStatus {
         String uri = "coap://[" + ip + "]/actuator/lights";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
-        System.out.println("Coap response nella GET Light: " + coapResponse);
+        System.out.println("[INFO] - COAP response: " + coapResponse);
         if (coapResponse != null && coapResponse.isSuccess()) {
             String responseText = coapResponse.getResponseText();
             if(responseText == null || responseText.length() == 0) {
@@ -40,7 +40,7 @@ public class LightBrightStatus {
                 return responseText;
             }
         } else {
-            System.out.println("[FAIL] -Error during CoAP (GET light) request");
+            System.out.println("[FAIL] - Error during CoAP (GET light) request");
             // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return "UNKNOWN";
         }
@@ -51,7 +51,6 @@ public class LightBrightStatus {
         String uri = "coap://[" + ip + "]/actuator/data";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
-        System.out.println("Coap response nella GET Wear: " + coapResponse);
         String[] results = new String[3];
 
         if (coapResponse != null && coapResponse.isSuccess()) {
@@ -76,7 +75,7 @@ public class LightBrightStatus {
                 return results;
             }
         } else {
-            System.out.println("[FAIL] -Error during CoAP (GET light) request");
+            System.out.println("[FAIL] - Error during CoAP (GET light) request");
             // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return null;
         }
@@ -88,12 +87,11 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println("Coap Response: " + lights);
-            System.out.println(" >  " + order);
+            System.out.println(" Command  " + order);
             if (lights.isSuccess()) {
-                System.out.println("[+] PUT request succeeded");
+                System.out.println("[OK] - PUT request succeeded");
             } else {
-                System.out.println("[-] PUT request failed");
+                System.out.println("[FAIL] - PUT request failed");
             }
             coapClient.shutdown();
         } catch (ConnectorException | IOException e) {
@@ -108,12 +106,12 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println("Coap Response: " + lights);
-            System.out.println(" >  " + order);
+            System.out.println("[INFO] - COAP response:" + lights);
+            System.out.println("[INFO] - Command  " + order);
             if (lights.isSuccess()) {
-                System.out.println("[+] PUT request succeeded");
+                System.out.println("[OK] - PUT request succeeded");
             } else {
-                System.out.println("[-] PUT request failed");
+                System.out.println("[FAIL] - PUT request failed");
             }
             coapClient.shutdown();
         } catch (ConnectorException | IOException e) {
@@ -131,9 +129,9 @@ public class LightBrightStatus {
         String payload = wearLevel + "," + fulminated + "," + counter;
         System.out.println(payload);
         CoapResponse response = coapClient.post(payload, MediaTypeRegistry.TEXT_PLAIN);
-        System.out.println("COAP risponde per SENDING WEAR LEVEL" + response);
+        System.out.println("[INFO] - COAP response: " + response);
         if(response.isSuccess()) {
-            System.out.println("[OK]- Data send successfully");
+            System.out.println("[OK] - Data send successfully");
         } else {
             System.out.println("[FAIL]- Something went wrong in sending");
         }
@@ -149,7 +147,7 @@ public class LightBrightStatus {
         String uri = "coap://[" + ip + "]/actuator/brights";
         CoapClient coapClient = new CoapClient(uri);
         CoapResponse coapResponse = coapClient.get();
-        System.out.println("Coap response nella GET Bright: " + coapResponse);
+        System.out.println("[INFO] - COAP response: " + coapResponse);
         if (coapResponse != null && coapResponse.isSuccess()) {
             String responseText = coapResponse.getResponseText();
             if(responseText == null || responseText.length() == 0) {
@@ -159,7 +157,6 @@ public class LightBrightStatus {
             }
         } else {
             System.out.println("[FAIL] -Error during CoAP (GET Bright) request");
-            // In caso di errore nella richiesta CoAP, potresti restituire un valore di default o sollevare un'eccezione personalizzata.
             return "UNKNOWN";
         }
     }
@@ -171,13 +168,13 @@ public class LightBrightStatus {
 
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println(" [COAP RESPONSE BRIGHT -1] +  " + response);
+            System.out.println("[INFO] - COAP response:" + response);
 
             // Check the response
             if (response.isSuccess()) {
-                System.out.println("[+] PUT request succeeded");
+                System.out.println("[OK] PUT request succeeded");
             } else {
-                System.out.println("[-] PUT request failed");
+                System.out.println("[FAIL] PUT request failed");
             }
             brightActuator.shutdown();
         } catch (ConnectorException | IOException e) {
@@ -191,13 +188,13 @@ public class LightBrightStatus {
         CoapClient brightActuator = new CoapClient("coap://[" + ip + "]/actuator/brights?order=OFF");
         try {
             CoapResponse response = brightActuator.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println("[COAP RESPONSE BRIGHT -O]+  " + response);
+            System.out.println("[INFO] - COAP response: " + response);
 
             // Check the response
             if (response.isSuccess()) {
-                System.out.println("[+] PUT request succeeded");
+                System.out.println("[OK] - PUT request succeeded");
             } else {
-                System.out.println("[-] PUT request failed");
+                System.out.println("[FAIL] - PUT request failed");
             }
             brightActuator.shutdown();
         } catch (ConnectorException | IOException e) {

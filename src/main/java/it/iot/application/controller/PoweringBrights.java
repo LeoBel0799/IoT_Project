@@ -32,14 +32,13 @@ public class PoweringBrights {
         String res;
         String status = actuatorStatus.getBrightStatusFromActuator(lightID);
 
-        System.out.println("DOPO la query: "+ status);
         if (status.equals("ON")) { //se la luce con quell'id è accesa posso accendere anche gli abbaglianti
             res = "OFF";
-            System.out.println("[!] Sending PUT request (OFF) to Brights");
+            System.out.println("[INFO] - Sending PUT request (OFF) to Brights");
             coapClient.putBrightsOff(address, res);
         } else  {
             res = "ON";
-            System.out.println("[!] Sending PUT request (ON) to Brights");
+            System.out.println("[INFO] - Sending PUT request (ON) to Brights");
             coapClient.putBrightsOn(address, res);
         }
         try {

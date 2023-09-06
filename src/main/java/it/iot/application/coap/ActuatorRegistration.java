@@ -72,7 +72,7 @@ public class ActuatorRegistration extends CoapResource {
 
         } catch (Throwable e) {
             e.printStackTrace();
-            System.out.println("! ERROR during parsing");
+            System.out.println("[FAIL] - Error during parsing");
             exchange.respond(CoAP.ResponseCode.NOT_ACCEPTABLE,"Unsuccessful".getBytes(StandardCharsets.UTF_8));
         }
 

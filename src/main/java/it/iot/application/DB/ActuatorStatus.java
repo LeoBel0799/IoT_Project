@@ -15,7 +15,7 @@ public class ActuatorStatus {
     Map<Integer, Integer> actuatorCounters = new HashMap<>();
 
     public ActuatorStatus() throws ConnectorException, IOException {
-        System.out.println("[INFO] - Connected to Collector DB, ready to insert Actuator status in DB|");
+        System.out.println("[INFO] - Connected to Collector DB, ready to insert Actuator status in DB!");
     }
 
     private void createActuator() {
@@ -25,7 +25,7 @@ public class ActuatorStatus {
                 "counter INTEGER,"+
                 "light VARCHAR(10), " +
                 "bright VARCHAR(10)," +
-                "wearLevel INTEGER, "+
+                "wearLevel DOUBLE, "+
                 "fulminated VARCHAR(10),"+
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"+
                 ");";
@@ -89,7 +89,7 @@ public class ActuatorStatus {
                 row += ", Counter: " + rs.getString("counter");
                 row += ", Lights: " + rs.getString("light");
                 row += ", Brights: " + rs.getString("bright");
-                row += ", Wear Level: " + rs.getInt("wearLevel");
+                row += ", Wear Level: " + rs.getDouble("wearLevel");
                 row += ", Fulminated: " + rs.getBoolean("fulminated");
                 row += ", Time:" + rs.getString("created_at");
                 rows.add(row);

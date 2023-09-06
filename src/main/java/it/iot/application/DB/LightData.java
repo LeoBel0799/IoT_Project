@@ -73,8 +73,6 @@ public class LightData {
 
         }catch (SQLException e) {
             System.err.println("[FAIL] - Error during insertion data record into Motion table\n");
-            e.printStackTrace(System.err);
-            e.getMessage();
         }
     }
 
@@ -168,7 +166,7 @@ public class LightData {
                 row += ", Lights: " + rs.getString("lights");
                 row += ", LightsDegree: " + rs.getInt("lightsDegree");
                 row += ", Brights: " + rs.getString("brights");
-                row += ", Bootstrepped: " + rs.getString("bootstrapped");
+                row += ", Bootstrapped: " + rs.getString("bootstrapped");
                 row += ", Time:" + rs.getString("created_at");
                 rows.add(row);
             }

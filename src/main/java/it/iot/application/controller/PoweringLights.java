@@ -16,7 +16,7 @@ public class PoweringLights {
     private double currentWearLevel = 0.0; // Variabile di istanza per memorizzare il wear level attuale
 
 
-    private static final double MAX_WEAR_LEVEL = 3.0;
+    private static final double MAX_WEAR_LEVEL = 10.0;
     int light;
     String address;
     LightData lightData;
@@ -42,7 +42,6 @@ public class PoweringLights {
 
     public void callResetForLight(int actuatorID, double wearLevel, boolean fulminated, int counter) throws SQLException, ConnectorException, IOException {
         //MANDO I DATI A COOAP PER RESET TRAMITE BOTTONE NEL C
-        //NOTA: NEL LA RISORSA NON è OBS IN C
         coapClient.sendWearLevel(address, wearLevel, fulminated, counter);
         //Timer per dare il tempo di resettare la luce nel C tramite bottone
         try {
@@ -51,7 +50,6 @@ public class PoweringLights {
             System.out.println("[FAIL] - Error in delay operation");
         }
         String[] results = coapClient.getWearAndFulminatedFromActuator(address);
-        System.out.println("Risultati resettati presi da COAP freschissimi");
         for (String value : results) {
             System.out.println(value);
         }
@@ -59,11 +57,8 @@ public class PoweringLights {
         boolean fulmin = Boolean.parseBoolean(results[1]);
         int count = Integer.parseInt(results[2]);
 
-        System.out.println("Wear resettato: " + wear);
-        System.out.println("Fulminated resettato: " + fulmin);
-        System.out.println("Counter resettato: " + count);
         actuatorStatus.insertWearAndFulminatedResetted(actuatorID, wear, fulmin, count);
-        System.out.println("INSERIMENTO DEI NUOVI DATI AVVENUTO");
+        System.out.println("[INFO] - New light inserted...data reset in DB!");
         actuatorStatus.selectAllActuatorStatus();
     }
 
@@ -117,7 +112,6 @@ public class PoweringLights {
 
             actuatorStatus.setFulminatedStatus(actuatorID);
             Boolean fulminated = actuatorStatus.getFulminatedStatus(actuatorID);
-            System.out.println("Valore della get di fulminated dopo setting: " + fulminated);
             callResetForLight(actuatorID, wearLevel, fulminated, counter);
         } else {
             try {

@@ -141,8 +141,6 @@ public class UserMenu implements Runnable {
                         break;
 
                     case OPTION_TURN_ON_BRIGHT:
-                        //TODO: TESTARE BRIGHT
-                        //if (optionOneExecuted && lightExecuted)
                         if (optionOneExecuted ){
                             int brightId = askForLightId();
                             if (lightData.lightExists(brightId)) {

@@ -14,10 +14,8 @@ public class StartingServer extends CoapServer implements Runnable{
             server = new StartingServer();
             server.add(new ActuatorRegistration());
             server.start();
-            //System.out.println("[INFO] - Registration server started successfully.");
         } catch (Exception e) {
-            System.err.println("[ERROR] - An unexpected error occurred during server startup.");
-            e.printStackTrace();
+            System.err.println("[FAIL] - An unexpected error occurred during server startup.");
         }
     }
     @Override
