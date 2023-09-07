@@ -45,7 +45,7 @@ public class PoweringLights {
         coapClient.sendWearLevel(address, wearLevel, fulminated, counter);
         //Timer per dare il tempo di resettare la luce nel C tramite bottone
         try {
-            Thread.sleep(10000);
+            Thread.sleep(20000);
         } catch (InterruptedException e) {
             System.out.println("[FAIL] - Error in delay operation");
         }
@@ -105,11 +105,11 @@ public class PoweringLights {
         currentWearLevel = wearLevel;
 
         if (wearLevel == MAX_WEAR_LEVEL){
-            System.out.println("[INFO] - Reset Light " + actuatorID + " to use it. " + wearLevel + " equal treshold: " + MAX_WEAR_LEVEL);
+            System.out.println("[INFO] - Reset Light " + actuatorID + " to use it. " + wearLevel + " equal treshold: " + MAX_WEAR_LEVEL + " . CRITICAL!");
         }
 
         if (wearLevel > MAX_WEAR_LEVEL) {
-
+            System.out.println("[INFO] - Reset Light " + actuatorID + " to use it. " + wearLevel + " over: " + MAX_WEAR_LEVEL + " . FULMINATED!");
             actuatorStatus.setFulminatedStatus(actuatorID);
             Boolean fulminated = actuatorStatus.getFulminatedStatus(actuatorID);
             callResetForLight(actuatorID, wearLevel, fulminated, counter);

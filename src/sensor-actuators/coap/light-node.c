@@ -14,7 +14,7 @@
 #include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip-debug.h"
 #include "routing/routing.h"
-#include "os/dev/button-hal.h"
+#include "dev/button-hal.h"
 
 #define SERVER_EP "coap://[fd00::1]:5683"
 #define CONNECTION_TRY_INTERVAL 1
@@ -30,7 +30,7 @@
 #define NODE_2_ID 2
 
 #define INTERVAL_BETWEEN_CONNECTION_TESTS 1
-static struct etimer pub_timer;
+//static struct etimer pub_timer;
 //dichiarazione array ID e indice
 uint16_t node_ids[] = {NODE_1_ID,NODE_2_ID};
 static uint8_t next_id = 0;
@@ -48,7 +48,7 @@ float wear_level = 0.0;     // Livello di usura
 int counter = 0;
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
-static struct etimer check_data_timer;
+//static struct etimer check_data_timer;
 //processo light_server avviato con autostart per farlo partire ad inizio programma
 //proesso per wear dichiarato all'inizio ma fatto partire "manulmente" sotto certe condizioni
 PROCESS(light_server, "Car controller");
@@ -73,32 +73,28 @@ EVENT_RESOURCE(res_wearLevel_observer,
 
 PROCESS_THREAD(wear_controller, ev, data) {
     PROCESS_BEGIN();
-    // Inizializza il bottone
     button_hal_init();
+
     while (1) {  // Loop infinito
-          etimer_set(&check_data_timer, CLOCK_SECOND);
-          PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
+          //etimer_set(&check_data_timer, CLOCK_SECOND);
+          //PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&check_data_timer));
         // Accendo il LED ROSSO quando ricevo i dati di wearLevel e fulminated e counter
-        if (new_data_received == true ){
+        if (new_data_received == true){
                 leds_on(LEDS_RED);  // Accendi il LED rosso
                 LOG_INFO("[OK] -  Wear data received!\n");
-                etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
-                PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
+                //etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
+                //PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
                 leds_off(LEDS_RED);  // Spegni il LED rosso
-        // Se il bottone viene premuto vuol dire che la luce è stata sostituita quindi wear e fulminated si resettando
-        //questi nuovi dati resettati devono essere mandati nel java e nel fb
-        //Se si prova in Cooja modificare 91 mettendo ev & button_hal_press_event perchè come sta adesso con
-        // == richiede che il bottone sia premuto per un periodo di tempo più lungo (cosa da fare sul sensore fisico)
-        //mentre su cooja non si può fare  e quindi essendo istantaneo non ha il tempo di rilevare il press del bottone
+                LOG_INFO("Evento %d\n", ev);
             if (ev == button_hal_press_event) {
                 // Il bottone è stato premuto (anche se è stato rilasciato rapidamente)
                 LOG_INFO("[INFO] - BUTTON PRESSED");
                 res_event_trigger();
-
-                leds_on(LEDS_BLUE);
-                etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
-                PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
-                leds_off(LEDS_BLUE);  // Spegni il LED rosso
+                leds_on(LEDS_YELLOW);
+                //etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
+                //PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
+                leds_off(LEDS_YELLOW);  // Spegni il LED blu
+                LOG_INFO("[OK] - Light replaced\n");
                 new_data_received = false;
                 break;
             }
@@ -106,7 +102,6 @@ PROCESS_THREAD(wear_controller, ev, data) {
         }
         PROCESS_YIELD(); // yield periodicamente
     }
-
     PROCESS_END();
 }
 
@@ -156,7 +151,6 @@ static void res_event_trigger() {
             fulminated = false;
             wear_level = 0.0;
             counter = 0;
-            LOG_INFO("[OK] - Light replaced\n");
              // Chiamata alla funzione per ottenere i valori dopo il reset
              coap_message_t response;
              uint8_t buffer[64];
