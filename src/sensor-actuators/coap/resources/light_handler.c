@@ -44,7 +44,7 @@ static void light_put_handler(coap_message_t *request, coap_message_t *response,
             led = 0;
             LOG_INFO("[OK] - Light OFF");
         }else if(strncmp(command, "ON", len) == 0){
-            led = LEDS_RED;
+            led = LEDS_GREEN;
             light_on = 1;
             LOG_INFO("[OK] - Light ON");
         }else{

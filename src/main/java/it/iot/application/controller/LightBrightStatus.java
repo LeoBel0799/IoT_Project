@@ -61,7 +61,8 @@ public class LightBrightStatus {
                 String[] parts = responseText.split(",");
                 // Il primo elemento è wearLevel
                 String wearLevelStr = parts[0];
-                double wearLevel = Double.parseDouble(wearLevelStr);
+                int wearLevel = Integer.parseInt(wearLevelStr);
+                double wearLevelDouble = wearLevel;
                 // Il secondo elemento è fulminated
                 String fulStr = parts[1];
                 boolean fulminated = Boolean.parseBoolean(fulStr);
@@ -69,7 +70,7 @@ public class LightBrightStatus {
                 String counterStr = parts[2];
                 int counter = Integer.parseInt(counterStr);
                 // Imposta i risultati da ritornare
-                results[0] = String.valueOf(wearLevel);
+                results[0] = String.valueOf(wearLevelDouble);
                 results[1] = String.valueOf(fulminated);
                 results[2] = String.valueOf(counter);
                 return results;
@@ -87,7 +88,7 @@ public class LightBrightStatus {
         CoapClient coapClient = new CoapClient(uri);
         try {
             CoapResponse lights = coapClient.put(order, MediaTypeRegistry.TEXT_PLAIN);
-            System.out.println(" Command  " + order);
+            System.out.println("[INFO] - Command  " + order);
             if (lights.isSuccess()) {
                 System.out.println("[OK] - PUT request succeeded");
             } else {

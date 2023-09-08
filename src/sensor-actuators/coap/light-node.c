@@ -44,7 +44,7 @@ static bool registered = false;
 static bool new_data_received = false;
 size_t payload_length = 0;  // Lunghezza del payload ricevuto
 bool fulminated = false;    // Flag per indicare se è fulminato
-float wear_level = 0.0;     // Livello di usura
+int wear_level = 0;     // Livello di usura
 int counter = 0;
 static struct etimer connectivity_timer;
 static struct etimer wait_registration;
@@ -90,10 +90,10 @@ PROCESS_THREAD(wear_controller, ev, data) {
                 // Il bottone è stato premuto (anche se è stato rilasciato rapidamente)
                 LOG_INFO("[INFO] - BUTTON PRESSED");
                 res_event_trigger();
-                leds_on(LEDS_YELLOW);
+                leds_on(LEDS_RED);
                 //etimer_set(&pub_timer, CLOCK_SECOND);  // Attendi 1 secondo
                 //PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&pub_timer));
-                leds_off(LEDS_YELLOW);  // Spegni il LED blu
+                leds_off(LEDS_GREEN);  // Spegni il LED blu
                 LOG_INFO("[OK] - Light replaced\n");
                 new_data_received = false;
                 break;
@@ -138,7 +138,7 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 
 static void res_get_handler_coap_values(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     char response_payload[64];
-    int length = snprintf(response_payload, sizeof(response_payload), "%.2f,%s,%d",
+    int length = snprintf(response_payload, sizeof(response_payload), "%d,%s,%d",
                           wear_level, fulminated ? "true" : "false", counter);
 
 
@@ -149,7 +149,7 @@ static void res_get_handler_coap_values(coap_message_t *request, coap_message_t 
 
 static void res_event_trigger() {
             fulminated = false;
-            wear_level = 0.0;
+            wear_level = 0;
             counter = 0;
              // Chiamata alla funzione per ottenere i valori dopo il reset
              coap_message_t response;

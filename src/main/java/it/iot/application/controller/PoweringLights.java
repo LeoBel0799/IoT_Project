@@ -45,7 +45,7 @@ public class PoweringLights {
         coapClient.sendWearLevel(address, wearLevel, fulminated, counter);
         //Timer per dare il tempo di resettare la luce nel C tramite bottone
         try {
-            Thread.sleep(20000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             System.out.println("[FAIL] - Error in delay operation");
         }

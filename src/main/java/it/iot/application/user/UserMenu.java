@@ -145,7 +145,11 @@ public class UserMenu implements Runnable {
                             int brightId = askForLightId();
                             if (lightData.lightExists(brightId)) {
                                 PoweringBrights brights = new PoweringBrights(brightId, actuatorStatus, nodeData);
-                                brights.setBright(brightId);
+                                try{
+                                    brights.setBright(brightId);
+                                } catch (NullPointerException e){
+                                    System.out.println("[INFO] - Cannot turn on bright: " + brightId + " . Light " + brightId + " not bootstrapped!");
+                                }
                             } else {
                                 System.out.println("[INFO] - No Light status records with ID: " + brightId + ", still arrived!");
                             }
